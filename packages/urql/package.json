@@ -4,6 +4,7 @@
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",
   "license": "MIT",
+  "private": false,
   "repository": "https://github.com/tonymushah/mizuki",
   "homepage": "https://github.com/tonymushah/mizuki/tree/main/packages/urql",
   "bugs": "https://github.com/tonymushah/mizuki/issues",
