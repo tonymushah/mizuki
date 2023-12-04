@@ -1,17 +1,14 @@
-import {invoke} from '@tauri-apps/api'
-import {listen, Event} from '@tauri-apps/api/event'
+import { invoke } from '@tauri-apps/api'
+import { listen, Event } from '@tauri-apps/api/event'
 import {
   Exchange,
   makeErrorResult,
   makeResult,
   Operation,
-  OperationResult
+  OperationResult,
+  subscriptionExchange
 } from '@urql/core'
-import {
-  ObserverLike,
-  SubscriptionOperation
-} from '@urql/core/dist/types/exchanges/subscription'
-import {ExecutionResult, print} from 'graphql'
+import { print } from 'graphql'
 import {
   filter,
   make,
@@ -39,15 +36,14 @@ import {
  * })
  * ```
  */
-export const invokeExchange: Exchange = ({forward}) => {
+export const invokeExchange: (name: string) => Exchange = (name) => ({ forward }) => {
   return ops$ => {
-    const sharedOps$ = share(ops$)
-
+    const sharedOps$ = share(ops$);
     const fetchResults$ = pipe(
       sharedOps$,
       filter(op => op.kind === 'query' || op.kind === 'mutation'),
       mergeMap(operation => {
-        const {key} = operation
+        const { key } = operation
         const teardown$ = pipe(
           sharedOps$,
           filter(op => op.kind === 'teardown' && op.key === key)
@@ -58,7 +54,7 @@ export const invokeExchange: Exchange = ({forward}) => {
           variables: operation.variables || undefined
         }
 
-        const command = `plugin:graphql|${operation.context.url}`
+        const command = `plugin:${name}|${operation.context.url}`
 
         console.debug({
           type: 'invokeRequest',
@@ -78,9 +74,8 @@ export const invokeExchange: Exchange = ({forward}) => {
 
             console.debug({
               type: error ? 'invokeError' : 'invokeSuccess',
-              message: `A ${
-                error ? 'failed' : 'successful'
-              } invoke response has been returned.`,
+              message: `A ${error ? 'failed' : 'successful'
+                } invoke response has been returned.`,
               operation,
               data: {
                 value: error || result
@@ -101,11 +96,6 @@ export const invokeExchange: Exchange = ({forward}) => {
   }
 }
 
-/**
- * @deprecated Use `invokeExchange` instead
- */
-export const tauriExchange = invokeExchange
-
 type Response = [body: string, isOk: boolean]
 
 function makeInvokeSource(
@@ -113,7 +103,7 @@ function makeInvokeSource(
   command: string,
   invokeArgs: Record<string, any>
 ): Source<OperationResult> {
-  return make(({next, complete}) => {
+  return make(({ next, complete }) => {
     let ended = false
 
     Promise.resolve()
@@ -174,24 +164,36 @@ function makeInvokeSource(
  * @param sink The sink that will receive the stream of subscription results
  * @returns
  */
-export function subscribe(
-  operation: SubscriptionOperation,
-  sink: ObserverLike<ExecutionResult>
-) {
-  let unlisten: () => void = () => {}
 
-  const id = Math.floor(Math.random() * 10000000)
+export function subscribe(name: string) {
+  return subscriptionExchange({
+    forwardSubscription: (operation) => ({
+      subscribe: (sink) => {
+        let unlisten: () => void = () => { }
 
-  Promise.resolve()
-    .then(async () =>
-      listen(`graphql://${id}`, (event: Event<string | null>) => {
-        if (event.payload === null) return sink.complete()
-        sink.next(JSON.parse(event.payload))
-      })
-    )
-    .then(_unlisten => (unlisten = _unlisten))
-    .then(() => invoke('plugin:graphql|subscriptions', {...operation, id}))
-    .catch(err => console.error(err))
+        const id = Math.floor(Math.random() * 10000000)
 
-  return unlisten
+        Promise.resolve()
+          .then(async () =>
+            listen(`graphql://${id}`, (event: Event<string | null>) => {
+              if (event.payload === null) return sink.complete()
+              sink.next(JSON.parse(event.payload))
+            })
+          )
+          .then(_unlisten => (unlisten = _unlisten))
+          .then(() => invoke(`plugin:${name}|subscriptions`, { ...operation, id }))
+          .catch(err => console.error(err))
+        return {
+          unsubscribe: unlisten
+        }
+      }
+    })
+  })
+}
+
+export function getExchanges(name: string){
+  return [
+    invokeExchange(name),
+    subscribe(name)
+  ]
 }

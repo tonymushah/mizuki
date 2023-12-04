@@ -1,0 +1,21 @@
+
+
+type Human {
+	name: String!
+}
+
+
+
+type Query {
+	hero: Human!
+}
+
+
+type Subscription {
+	helloWorld: String!
+}
+
+schema {
+	query: Query
+	subscription: Subscription
+}

@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "1",
-    "@urql/core": "^3.0.0",
-    "wonka": "^6.0.0"
+    "@urql/core": "4",
+    "wonka": "6"
   },
   "devDependencies": {
     "graphql": "16.6.0",

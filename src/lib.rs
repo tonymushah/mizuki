@@ -219,15 +219,13 @@ pub use async_graphql;
 use async_graphql::{
   futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType,
 };
-use std::any::Any;
-#[cfg(feature = "graphiql")]
-use std::net::SocketAddr;
+use std::{any::Any, io::{BufWriter, Write}, fs::File, path::Path};
 use tauri::{
-  plugin::{self, Plugin, TauriPlugin},
+  plugin::Plugin,
   Invoke, InvokeError, Manager, Runtime,
 };
 
-pub struct Mizuki<Query, Mutation, Subscription, D>
+pub struct Mizuki<D, Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -239,7 +237,7 @@ where
   context: Option<D>,
 }
 
-impl<Query, Mutation, Subscription, D> Mizuki<Query, Mutation, Subscription, D>
+impl<Query, Mutation, Subscription, D> Mizuki<D, Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -257,9 +255,16 @@ where
       context: Some(context),
     }
   }
+  pub fn sdl(&self) -> String {
+    self.schema.sdl()
+  }
+  pub fn export_sdl<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
+    let mut file = BufWriter::new(File::create(path)?);
+    file.write_all(self.sdl().as_bytes())
+  }
 }
 
-impl<Query, Mutation, Subscription> Mizuki<Query, Mutation, Subscription, ()>
+impl<Query, Mutation, Subscription> Mizuki<(), Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -274,7 +279,7 @@ where
   }
 }
 
-impl<R, Query, Mutation, Subscription, D> Plugin<R> for Mizuki<Query, Mutation, Subscription, D>
+impl<R, Query, Mutation, Subscription, D> Plugin<R> for Mizuki<D, Query, Mutation, Subscription>
 where
   R: Runtime,
   Query: ObjectType + 'static,
@@ -343,155 +348,4 @@ where
       )),
     }
   }
-}
-
-/// Initializes the GraphQL plugin.
-///
-/// This plugin exposes a async-graphql endpoint via Tauri's IPC system,
-/// allowing the frontend to invoke backend functionality through GraphQL.
-/// **This does not open a web server.**
-///
-/// The `schema` argument must be a valid [`async_graphql::Schema`].
-///
-/// ## Example
-///
-/// ```rust
-/// use async_graphql::{Schema, Object, EmptyMutation, EmptySubscription, SimpleObject, Result as GraphQLResult};
-///
-/// #[derive(SimpleObject)]
-/// struct User {
-///     id: i32,
-///     name: String
-/// }
-///
-/// struct Query;
-///
-/// // Implement resolvers for all possible queries.
-/// #[Object]
-/// impl Query {
-///     async fn me(&self) -> GraphQLResult<User> {
-///         Ok(User {
-///             id: 1,
-///             name: "Luke Skywalker".to_string(),
-///         })
-///     }
-/// }
-///
-/// let schema = Schema::new(
-///     Query,
-///     EmptyMutation,
-///     EmptySubscription,
-/// );
-///
-/// tauri::Builder::default()
-///     .plugin(tauri_plugin_graphql::init(schema));
-/// ```
-
-/// Initializes the GraphQL plugin and GraphiQL IDE.
-///
-/// This plugin exposes a async-graphql endpoint via Tauri's IPC system,
-/// allowing the frontend to invoke backend functionality through GraphQL.
-/// While the regular `init` function does not open a web server, the GraphiQL
-/// client is exposed over http.
-///
-/// The `schema` argument must be a valid [`async_graphql::Schema`].
-///
-/// ## Example
-///
-/// ```rust
-/// use async_graphql::{Schema, Object, EmptyMutation, EmptySubscription, SimpleObject, Result as GraphQLResult};
-///
-/// #[derive(SimpleObject)]
-/// struct User {
-///     id: i32,
-///     name: String
-/// }
-///
-/// struct Query;
-///
-/// // Implement resolvers for all possible queries.
-/// #[Object]
-/// impl Query {
-///     async fn me(&self) -> GraphQLResult<User> {
-///         Ok(User {
-///             id: 1,
-///             name: "Luke Skywalker".to_string(),
-///         })
-///     }
-/// }
-///
-/// let schema = Schema::new(
-///     Query,
-///     EmptyMutation,
-///     EmptySubscription,
-/// );
-///
-/// tauri::Builder::default()
-///     .plugin(tauri_plugin_graphql::init_with_graphiql(schema, ([127,0,0,1], 8080)));
-/// ```
-
-#[cfg(feature = "graphiql")]
-pub fn init_with_graphiql<R, Query, Mutation, Subscription>(
-  schema: Schema<Query, Mutation, Subscription>,
-  graphiql_addr: impl Into<SocketAddr>,
-) -> TauriPlugin<R>
-where
-  R: Runtime,
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-{
-  use async_graphql::http::GraphiQLSource;
-  use async_graphql_warp::{GraphQLBadRequest, GraphQLResponse};
-  use http::StatusCode;
-  use std::convert::Infallible;
-  use warp::{http::Response as HttpResponse, Filter, Rejection};
-
-  let graphiql_addr: SocketAddr = graphiql_addr.into();
-
-  plugin::Builder::new("graphql")
-    //.invoke_handler(invoke_handler(schema.clone()))
-    .setup(move |_| {
-      let graphql_post = async_graphql_warp::graphql(schema).and_then(
-        |(schema, request): (
-          Schema<Query, Mutation, Subscription>,
-          async_graphql::Request,
-        )| async move {
-          Ok::<_, Infallible>(GraphQLResponse::from(schema.execute(request).await))
-        },
-      );
-
-      let graphiql = warp::path::end().and(warp::get()).map(move || {
-        HttpResponse::builder()
-          .header("content-type", "text/html")
-          .body(
-            GraphiQLSource::build()
-              .endpoint(&graphiql_addr.to_string())
-              .finish(),
-          )
-      });
-
-      let routes = graphiql
-        .or(graphql_post)
-        .recover(|err: Rejection| async move {
-          if let Some(GraphQLBadRequest(err)) = err.find() {
-            return Ok::<_, Infallible>(warp::reply::with_status(
-              err.to_string(),
-              StatusCode::BAD_REQUEST,
-            ));
-          }
-
-          Ok(warp::reply::with_status(
-            "INTERNAL_SERVER_ERROR".to_string(),
-            StatusCode::INTERNAL_SERVER_ERROR,
-          ))
-        });
-
-      println!("GraphiQL IDE: {}", graphiql_addr);
-
-      tauri::async_runtime::spawn(warp::serve(routes).run(graphiql_addr));
-
-      Ok(())
-    })
-    .build()
 }
