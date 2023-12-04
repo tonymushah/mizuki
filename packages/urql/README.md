@@ -1,4 +1,4 @@
-# tauri-plugin-graphql
+# mizuki-urql
 
 [![Npm][npm-badge]][npm-url]
 
@@ -7,11 +7,11 @@ Custom `urql` exchange that uses Tauri's IPC system to resolve queries against a
 ## Install
 
 ```console
-$ pnpm add tauri-plugin-graphql-urql
+$ pnpm add mizuki-urql
 # or
-$ npm install tauri-plugin-graphql-urql
+$ npm install mizuki-urql
 # or
-$ yarn add tauri-plugin-graphql-urql
+$ yarn add mizuki-urql
 ```
 
 ## Usage
@@ -21,11 +21,11 @@ You need to register the plugin with Tauri first! Please see the [top-level Read
 Import and use the custom exchange to connect to the GraphQL endpoint exposed over IPC.
 
 ```javascript
-import { invokeExchange } from "tauri-plugin-graphql-urql";
+import { invokeExchange } from "mizuki-urql";
 
 const client = createClient({
   url: "graphql", // this value is important, don't touch
-  exchanges: [invokeExchange],
+  exchanges: [invokeExchange("myPlugin")],
 });
 
 const heroQuery = `
@@ -57,19 +57,13 @@ function Hero() {
 This adapter also supports subscriptions.
 
 ```javascript
-import { subscribe } from "tauri-plugin-graphql-urql";
-import { subscriptionExchange } from "@urql/preact";
+import { subscriptionExchange } from "mizuki-urql";
+import { createClient } from "@urql/preact";
 
 const client = createClient({
   url: "graphql",
   exchanges: [
-    subscriptionExchange({
-      forwardSubscription: (operation) => ({
-        subscribe: (sink) => ({
-          unsubscribe: subscribe(operation, sink),
-        }),
-      }),
-    }),
+    subscriptionExchange("myPlugin")
   ],
 });
 
@@ -100,8 +94,8 @@ function TestSubscription() {
 
 ## License
 
-[MIT © Jonas Kruckenberg](./LICENSE)
+[MIT © Tony Mushah](./LICENSE)
 
 [top-level Readme]: ../../README.md
-[npm-url]: https://www.npmjs.com/package/tauri-plugin-graphql-urql
-[npm-badge]: https://img.shields.io/npm/v/tauri-plugin-graphql-urql
+[npm-url]: https://www.npmjs.com/package/mizuki-urql
+[npm-badge]: https://img.shields.io/npm/v/mizuki-urql
