@@ -1,14 +1,14 @@
 {
-  "name": "tauri-plugin-graphql-urql",
-  "version": "2.0.3",
-  "description": "A plugin for Tauri that enables type-safe IPC through GraphQL.",
+  "name": "@mizuki/urql",
+  "version": "0.1.0",
+  "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg",
   "license": "MIT",
-  "repository": "https://github.com/JonasKruckenberg/tauri-plugin-graphql",
-  "homepage": "https://github.com/JonasKruckenberg/tauri-plugin-graphql/tree/main/packages/urql",
-  "bugs": "https://github.com/JonasKruckenberg/tauri-plugin-graphql/issues",
+  "repository": "https://github.com/tonymushah/mizuki",
+  "homepage": "https://github.com/tonymushah/mizuki/tree/main/packages/urql",
+  "bugs": "https://github.com/tonymushah/mizuki/issues",
   "keywords": [
-    "tauri-plugin",
+    "tauri",
     "graphql"
   ],
   "browser": "dist/index.mjs",
@@ -22,7 +22,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.0",
+    "@tauri-apps/api": "1",
     "@urql/core": "^3.0.0",
     "wonka": "^6.0.0"
   },

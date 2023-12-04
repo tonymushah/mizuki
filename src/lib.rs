@@ -211,40 +211,105 @@
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
 
+mod subscription;
+
+use subscription::SubscriptionRequest;
+
 pub use async_graphql;
 use async_graphql::{
-  futures_util::StreamExt, BatchRequest, ObjectType, Request, Schema, SubscriptionType,
+  futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType,
 };
-use serde::Deserialize;
+use std::any::Any;
 #[cfg(feature = "graphiql")]
 use std::net::SocketAddr;
 use tauri::{
-  plugin::{self, TauriPlugin},
+  plugin::{self, Plugin, TauriPlugin},
   Invoke, InvokeError, Manager, Runtime,
 };
 
-fn invoke_handler<R, Query, Mutation, Subscription>(
+pub struct Mizuki<Query, Mutation, Subscription, D>
+where
+  Query: ObjectType + 'static,
+  Mutation: ObjectType + 'static,
+  Subscription: SubscriptionType + 'static,
+  D: Any + Clone + Send + Sync,
+{
+  name: &'static str,
   schema: Schema<Query, Mutation, Subscription>,
-) -> impl Fn(Invoke<R>)
+  context: Option<D>,
+}
+
+impl<Query, Mutation, Subscription, D> Mizuki<Query, Mutation, Subscription, D>
+where
+  Query: ObjectType + 'static,
+  Mutation: ObjectType + 'static,
+  Subscription: SubscriptionType + 'static,
+  D: Any + Clone + Send + Sync,
+{
+  pub fn new_with_context(
+    name: &'static str,
+    schema: Schema<Query, Mutation, Subscription>,
+    context: D,
+  ) -> Self {
+    Self {
+      name,
+      schema,
+      context: Some(context),
+    }
+  }
+}
+
+impl<Query, Mutation, Subscription> Mizuki<Query, Mutation, Subscription, ()>
+where
+  Query: ObjectType + 'static,
+  Mutation: ObjectType + 'static,
+  Subscription: SubscriptionType + 'static,
+{
+  pub fn new(name: &'static str, schema: Schema<Query, Mutation, Subscription>) -> Self {
+    Self {
+      name,
+      schema,
+      context: None::<()>,
+    }
+  }
+}
+
+impl<R, Query, Mutation, Subscription, D> Plugin<R> for Mizuki<Query, Mutation, Subscription, D>
 where
   R: Runtime,
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
   Subscription: SubscriptionType + 'static,
+  D: Any + Clone + Send + Sync,
 {
-  move |invoke| {
+  fn name(&self) -> &'static str {
+    self.name
+  }
+  fn extend_api(&mut self, invoke: Invoke<R>) {
+    let context = self.context.clone();
     let window = invoke.message.window();
 
-    let schema = schema.clone();
+    let schema = self.schema.clone();
 
     match invoke.message.command() {
       "graphql" => invoke.resolver.respond_async(async move {
         let req: BatchRequest = serde_json::from_value(invoke.message.payload().clone())
           .map_err(InvokeError::from_serde_json)?;
 
-        let resp = schema
-          .execute_batch(req.data(window.app_handle()).data(window))
-          .await;
+        let resp = if let Some(data) = context {
+          schema
+            .execute_batch(
+              req
+                .data(window.app_handle())
+                .data(window)
+                .data(data.clone()),
+            )
+            .await
+        } else {
+          schema
+            .execute_batch(req.data(window.app_handle()).data(window))
+            .await
+        };
 
         let str = serde_json::to_string(&resp).map_err(InvokeError::from_serde_json)?;
 
@@ -255,7 +320,11 @@ where
           .map_err(InvokeError::from_serde_json)?;
 
         let subscription_window = window.clone();
-        let mut stream = schema.execute_stream(req.inner.data(window.app_handle()).data(window));
+        let mut stream = if let Some(data) = context {
+          schema.execute_stream(req.inner.data(window.app_handle()).data(window).data(data))
+        } else {
+          schema.execute_stream(req.inner.data(window.app_handle()).data(window))
+        };
 
         let event_id = &format!("graphql://{}", req.id);
 
@@ -317,19 +386,6 @@ where
 /// tauri::Builder::default()
 ///     .plugin(tauri_plugin_graphql::init(schema));
 /// ```
-pub fn init<R, Query, Mutation, Subscription>(
-  schema: Schema<Query, Mutation, Subscription>,
-) -> TauriPlugin<R>
-where
-  R: Runtime,
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-{
-  plugin::Builder::new("graphql")
-    .invoke_handler(invoke_handler(schema))
-    .build()
-}
 
 /// Initializes the GraphQL plugin and GraphiQL IDE.
 ///
@@ -373,6 +429,7 @@ where
 /// tauri::Builder::default()
 ///     .plugin(tauri_plugin_graphql::init_with_graphiql(schema, ([127,0,0,1], 8080)));
 /// ```
+
 #[cfg(feature = "graphiql")]
 pub fn init_with_graphiql<R, Query, Mutation, Subscription>(
   schema: Schema<Query, Mutation, Subscription>,
@@ -393,7 +450,7 @@ where
   let graphiql_addr: SocketAddr = graphiql_addr.into();
 
   plugin::Builder::new("graphql")
-    .invoke_handler(invoke_handler(schema.clone()))
+    //.invoke_handler(invoke_handler(schema.clone()))
     .setup(move |_| {
       let graphql_post = async_graphql_warp::graphql(schema).and_then(
         |(schema, request): (
@@ -437,11 +494,4 @@ where
       Ok(())
     })
     .build()
-}
-
-#[derive(Debug, Deserialize)]
-struct SubscriptionRequest {
-  #[serde(flatten)]
-  inner: Request,
-  id: u32,
 }

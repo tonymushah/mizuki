@@ -35,9 +35,9 @@ impl Subscription {
 
 fn main() {
   let schema = Schema::new(Query, EmptyMutation, Subscription);
-
+  println!("{}", schema.sdl());
   tauri::Builder::default()
-    .plugin(tauri_plugin_graphql::init(schema))
+    .plugin(mizuki::Mizuki::new("graphql", schema))
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
