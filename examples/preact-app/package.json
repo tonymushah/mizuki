@@ -21,7 +21,7 @@
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",
     "@graphql-typed-document-node/core": "^3.2.0",
-    "@preact/preset-vite": "2.3.0",
+    "@preact/preset-vite": "2.7",
     "@tauri-apps/cli": "1.5",
     "graphql": "^16.6.0",
     "ts-node": "^10.9.1",

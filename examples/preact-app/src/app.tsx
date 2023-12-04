@@ -37,7 +37,6 @@ function handleSubscription(messages = [], response) {
 
 function TestSubscription() {
   const [res] = useSubscription({ query: newMessages }, handleSubscription);
-
   if (!res.data) {
     return <p>No new messages</p>;
   }
