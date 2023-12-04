@@ -102,7 +102,7 @@ PRs are welcome!
 [MIT © Tony Mushah](./LICENSE)
 
 [`@mizuki/urql`]: packages/urql
-[urql-adapter-version-badge]: https://img.shields.io/npm/v/tauri-plugin-graphql-urql?label=%20
+[urql-adapter-version-badge]: https://img.shields.io/npm/v/@mizuki/urql?label=%20
 [urql-adapter-changelog]: packages/urql/CHANGELOG.md
 [`urql`]: https://formidable.com/open-source/urql/
 [`async_graphql::Schema`]: https://docs.rs/async-graphql/latest/async_graphql/struct.Schema.html
