@@ -16,7 +16,16 @@
     "noEmit": true,
     "jsx": "preserve",
     "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
+    "jsxFragmentFactory": "Fragment",
+    "plugins": [
+      {
+        "name": "@0no-co/graphqlsp",
+        "schema": "./myschema.graphqls",
+        "disableTypegen": true,
+        "templateIsCallExpression": true,
+        "template": "graphql"
+      }
+    ]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

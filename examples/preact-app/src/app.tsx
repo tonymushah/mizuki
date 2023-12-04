@@ -1,35 +1,37 @@
 import { useQuery, useSubscription } from "@urql/preact";
 
-const testQuery = `
-query {
+import { graphql } from "./gql";
+
+const testQuery = graphql(`
+query getHero {
   hero {
     name
   }
 }
-`;
+`);
 
 function TestQuery() {
-  const [result] = useQuery({
+  const [res] = useQuery({
     query: testQuery,
   });
 
-  const { data, fetching, error } = result;
+  const { data, fetching, error } = res;
 
   if (fetching) return <p>Loading...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
 
   return (
-    <p>The hero is {data.hero.name}</p>
+    <p>The hero is {data?.hero.name ?? "not here"}</p>
   );
 }
 
-const newMessages = `
+const newMessages = graphql(`
   subscription MessageSub {
     helloWorld
   }
-`;
+`);
 
-function handleSubscription(messages = [], response) {  
+function handleSubscription(messages = [], response) {
   return [...messages, response.helloWorld];
 };
 
@@ -41,10 +43,10 @@ function TestSubscription() {
   }
 
   return (
-        <p>
-          {res.data}
-        </p>
-  ); 
+    <p>
+      {res.data}
+    </p>
+  );
 }
 
 export function App() {

@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "codegen": "graphql-codegen"
   },
   "dependencies": {
     "@mizuki/urql": "link:../../packages/urql",
@@ -15,12 +16,15 @@
     "preact": "10.10.6"
   },
   "devDependencies": {
+    "@0no-co/graphqlsp": "^0.11.2",
     "@babel/core": "7",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
     "@preact/preset-vite": "2.3.0",
     "@tauri-apps/cli": "1.5",
     "graphql": "^16.6.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.3.2",
     "vite": "4"
   }
