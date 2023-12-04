@@ -1,7 +1,7 @@
-// Copyright 2022 Jonas Kruckenberg
+// Copyright 2023 Tony Mushah
 // SPDX-License-Identifier: MIT
 
-//! This crate contains a Tauri plugin used to expose a [`async_graphql`]
+//! This crate contains a Tauri plugin builder used to expose a [`async_graphql`]
 //! GraphQL endpoint through Tauri's IPC system. This plugin can be used as
 //! safer alternative to Tauri's existing Command API since both the Rust and
 //! JavaScript side of the interface can be generated from a common schema.
@@ -71,7 +71,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!     .plugin(tauri_plugin_graphql::init(schema));
+//!     .plugin(mizuki::MizukiPlugin::new("todo-plugin", schema));
 //! ```
 //!
 //! ### Mutations
@@ -145,7 +145,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!     .plugin(tauri_plugin_graphql::init(schema))
+//!     .plugin(mizuki::MizukiPlugin::new("list-plugin", schema))
 //!     .setup(|app| {
 //!       app.manage(List::default());
 //!
@@ -194,7 +194,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!   .plugin(tauri_plugin_graphql::init(schema));
+//!   .plugin(mizuki::MizukiPlugin::new("subsciption", schema));
 //! ```
 //!
 //! ## Stability
@@ -216,16 +216,17 @@ mod subscription;
 use subscription::SubscriptionRequest;
 
 pub use async_graphql;
-use async_graphql::{
-  futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType,
+use async_graphql::{futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType};
+use std::{
+  any::Any,
+  fs::File,
+  io::{BufWriter, Write},
+  path::Path,
 };
-use std::{any::Any, io::{BufWriter, Write}, fs::File, path::Path};
-use tauri::{
-  plugin::Plugin,
-  Invoke, InvokeError, Manager, Runtime,
-};
+use tauri::{plugin::Plugin, Invoke, InvokeError, Manager, Runtime};
 
-pub struct Mizuki<D, Query, Mutation, Subscription>
+#[derive(Clone)]
+pub struct MizukiPlugin<D, Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -237,7 +238,7 @@ where
   context: Option<D>,
 }
 
-impl<Query, Mutation, Subscription, D> Mizuki<D, Query, Mutation, Subscription>
+impl<Query, Mutation, Subscription, D> MizukiPlugin<D, Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -255,16 +256,25 @@ where
       context: Some(context),
     }
   }
+  /// Get the actual SDL schema format
   pub fn sdl(&self) -> String {
     self.schema.sdl()
   }
+  /// Export the schema to a new file
   pub fn export_sdl<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
     let mut file = BufWriter::new(File::create(path)?);
     file.write_all(self.sdl().as_bytes())
   }
+  pub fn drop_context(self) -> MizukiPlugin<(), Query, Mutation, Subscription> {
+    MizukiPlugin {
+      name: self.name,
+      schema: self.schema,
+      context: None::<()>,
+    }
+  }
 }
 
-impl<Query, Mutation, Subscription> Mizuki<(), Query, Mutation, Subscription>
+impl<Query, Mutation, Subscription> MizukiPlugin<(), Query, Mutation, Subscription>
 where
   Query: ObjectType + 'static,
   Mutation: ObjectType + 'static,
@@ -277,9 +287,20 @@ where
       context: None::<()>,
     }
   }
+  pub fn add_context<D: Any + Clone + Send + Sync>(
+    self,
+    context: D,
+  ) -> MizukiPlugin<D, Query, Mutation, Subscription> {
+    MizukiPlugin {
+      name: self.name,
+      schema: self.schema,
+      context: Some(context),
+    }
+  }
 }
 
-impl<R, Query, Mutation, Subscription, D> Plugin<R> for Mizuki<D, Query, Mutation, Subscription>
+impl<R, Query, Mutation, Subscription, D> Plugin<R>
+  for MizukiPlugin<D, Query, Mutation, Subscription>
 where
   R: Runtime,
   Query: ObjectType + 'static,

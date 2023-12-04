@@ -1,7 +1,7 @@
 [package]
 name = "mizuki"
 version = "0.1.0"
-authors = [ "tonymushah <tonymushahDev06@yahoo.com>" ]
+authors = [ "Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>" ]
 description = "A toolkit for building Tauri Plugins that enables type-safe IPC through GraphQL."
 edition = "2021"
 rust-version = "1.59"
@@ -11,9 +11,6 @@ repository = "https://github.com/tonymushah/mizuki"
 categories = [ "gui", "web-programming" ]
 keywords = [ "tauri-plugin", "graphql" ]
 
-[package.metadata.docs.rs]
-features = [ "graphiql" ]
-
 [dependencies]
 serde = { version = "1", features = [ "derive" ] }
 serde_json = "1"
@@ -22,7 +19,6 @@ async-graphql = "6"
 
 [features]
 log = [ "async-graphql/log" ]
-tracing = [ "async-graphql/tracing" ]
 opentelemetry = [ "async-graphql/opentelemetry" ]
 bson = [ "async-graphql/bson" ]
 chrono = [ "async-graphql/chrono" ]

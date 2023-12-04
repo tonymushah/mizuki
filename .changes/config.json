@@ -1,5 +1,5 @@
 {
-  "gitSiteUrl": "https://www.github.com/your-org/tauri-plugin-graphql/",
+  "gitSiteUrl": "https://www.github.com/tonymushah/mizuki",
   "pkgManagers": {
     "rust": {
       "version": true,
@@ -65,14 +65,14 @@
     }
   },
   "packages": {
-    "tauri-plugin-graphql": {
+    "mizuki": {
       "path": ".",
       "manager": "rust"
     },
-    "tauri-plugin-graphql-urql": {
+    "@mizuki/urql": {
       "path": "packages/urql",
       "manager": "javascript",
-      "dependencies": ["tauri-plugin-graphql"]
+      "dependencies": ["mizuki"]
     }
   }
 }

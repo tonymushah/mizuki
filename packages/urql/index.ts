@@ -1,14 +1,14 @@
-import { invoke } from '@tauri-apps/api'
-import { listen, Event } from '@tauri-apps/api/event'
+import {invoke} from '@tauri-apps/api'
+import {listen, Event} from '@tauri-apps/api/event'
 import {
   Exchange,
   makeErrorResult,
   makeResult,
   Operation,
   OperationResult,
-  subscriptionExchange
+  subscriptionExchange as subEx
 } from '@urql/core'
-import { print } from 'graphql'
+import {print} from 'graphql'
 import {
   filter,
   make,
@@ -28,73 +28,77 @@ import {
  *
  * ```javascript
  * import { createClient } from 'urql'
- * import { tauriExchange } from 'tauri-plugin-graphql/urql'
+ * import { invokeExchange } from '@mizuki/urql'
  *
  * const client = createClient({
  *    url: 'graphql', // this endpoint is important, don't touch
- *    exchanges: [tauriExchange]
+ *    exchanges: [invokeExchange("<YOUR_PLUGIN_NAME_HERE>")]
  * })
  * ```
+ * @param name Your plugin name
  */
-export const invokeExchange: (name: string) => Exchange = (name) => ({ forward }) => {
-  return ops$ => {
-    const sharedOps$ = share(ops$);
-    const fetchResults$ = pipe(
-      sharedOps$,
-      filter(op => op.kind === 'query' || op.kind === 'mutation'),
-      mergeMap(operation => {
-        const { key } = operation
-        const teardown$ = pipe(
-          sharedOps$,
-          filter(op => op.kind === 'teardown' && op.key === key)
-        )
+export const invokeExchange: (name: string) => Exchange =
+  name =>
+  ({forward}) => {
+    return ops$ => {
+      const sharedOps$ = share(ops$)
+      const fetchResults$ = pipe(
+        sharedOps$,
+        filter(op => op.kind === 'query' || op.kind === 'mutation'),
+        mergeMap(operation => {
+          const {key} = operation
+          const teardown$ = pipe(
+            sharedOps$,
+            filter(op => op.kind === 'teardown' && op.key === key)
+          )
 
-        const args = {
-          query: print(operation.query),
-          variables: operation.variables || undefined
-        }
-
-        const command = `plugin:${name}|${operation.context.url}`
-
-        console.debug({
-          type: 'invokeRequest',
-          message: 'An invoke request is being executed.',
-          operation,
-          data: {
-            command,
-            args
+          const args = {
+            query: print(operation.query),
+            variables: operation.variables || undefined
           }
-        })
 
-        return pipe(
-          makeInvokeSource(operation, command, args),
-          takeUntil(teardown$),
-          onPush(result => {
-            const error = !result.data ? result.error : undefined
+          const command = `plugin:${name}|${operation.context.url}`
 
-            console.debug({
-              type: error ? 'invokeError' : 'invokeSuccess',
-              message: `A ${error ? 'failed' : 'successful'
-                } invoke response has been returned.`,
-              operation,
-              data: {
-                value: error || result
-              }
-            })
+          console.debug({
+            type: 'invokeRequest',
+            message: 'An invoke request is being executed.',
+            operation,
+            data: {
+              command,
+              args
+            }
           })
-        )
-      })
-    )
 
-    const forward$ = pipe(
-      sharedOps$,
-      filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
-      forward
-    )
+          return pipe(
+            makeInvokeSource(operation, command, args),
+            takeUntil(teardown$),
+            onPush(result => {
+              const error = !result.data ? result.error : undefined
 
-    return merge([fetchResults$, forward$])
+              console.debug({
+                type: error ? 'invokeError' : 'invokeSuccess',
+                message: `A ${
+                  error ? 'failed' : 'successful'
+                } invoke response has been returned.`,
+                operation,
+                data: {
+                  value: error || result
+                }
+              })
+            })
+          )
+        })
+      )
+
+      const forward$ = pipe(
+        sharedOps$,
+        filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
+        forward
+      )
+
+      return merge([fetchResults$, forward$])
+    }
   }
-}
 
 type Response = [body: string, isOk: boolean]
 
@@ -103,7 +107,7 @@ function makeInvokeSource(
   command: string,
   invokeArgs: Record<string, any>
 ): Source<OperationResult> {
-  return make(({ next, complete }) => {
+  return make(({next, complete}) => {
     let ended = false
 
     Promise.resolve()
@@ -143,33 +147,28 @@ function makeInvokeSource(
  *
  * ```javascript
  * import { createClient } from 'urql'
- * import { tauriExchange } from 'tauri-plugin-graphql/urql'
+ * import { subscriptionExchange } from '@mizuki/urql'
  *
+ * const name = "<YOUR_PLUGIN_NAME_HERE>"
+ * 
  * const client = createClient({
  *  url: "graphql", // this endpoint is important, don't touch
  *  exchanges: [
- *    invokeExchange,
- *    subscriptionExchange({
- *      forwardSubscription: (operation) => ({
- *        subscribe: (sink) => ({
- *          unsubscribe: subscribe(operation, sink),
- *        }),
- *      }),
- *    }),
+ *    invokeExchange(name),
+      subscriptionExchange(name)
  *  ],
  * });
  * ```
  *
- * @param operation The GraphQL Operation generated by urql
- * @param sink The sink that will receive the stream of subscription results
+ * @param name Your plugin name
  * @returns
  */
 
-export function subscribe(name: string) {
-  return subscriptionExchange({
-    forwardSubscription: (operation) => ({
-      subscribe: (sink) => {
-        let unlisten: () => void = () => { }
+export function subscriptionExchange(name: string) {
+  return subEx({
+    forwardSubscription: operation => ({
+      subscribe: sink => {
+        let unlisten: () => void = () => {}
 
         const id = Math.floor(Math.random() * 10000000)
 
@@ -181,7 +180,9 @@ export function subscribe(name: string) {
             })
           )
           .then(_unlisten => (unlisten = _unlisten))
-          .then(() => invoke(`plugin:${name}|subscriptions`, { ...operation, id }))
+          .then(() =>
+            invoke(`plugin:${name}|subscriptions`, {...operation, id})
+          )
           .catch(err => console.error(err))
         return {
           unsubscribe: unlisten
@@ -191,9 +192,26 @@ export function subscribe(name: string) {
   })
 }
 
-export function getExchanges(name: string){
-  return [
-    invokeExchange(name),
-    subscribe(name)
-  ]
+/**
+ * Get the `invokeExchange` and the `subscriptionExchange` through one function
+ *
+ * ## Example
+ *
+ * ```javascript
+ * import { createClient } from 'urql'
+ * import { getExchanges } from '@mizuki/urql'
+ *
+ * const name = "<YOUR_PLUGIN_NAME_HERE>"
+ *
+ * const client = createClient({
+ *  url: "graphql", // this endpoint is important, don't touch
+ *  exchanges: getExchanges(name)
+ * });
+ * ```
+ *
+ * @param name Your plugin name
+ * @returns
+ */
+export function getExchanges(name: string) {
+  return [invokeExchange(name), subscriptionExchange(name)]
 }
