@@ -1,0 +1,78 @@
+{
+  "gitSiteUrl": "https://www.github.com/tonymushah/mizuki",
+  "pkgManagers": {
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "cargo search ${ pkg.pkg } --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -",
+      "publish": [
+        {
+          "command": "sudo apt-get update",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "sudo apt-get install -y webkit2gtk-4.0",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "echo \"# Cargo Publish\"",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "echo '```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "cargo publish",
+          "dryRunCommand": "cargo publish --dry-run --allow-dirty",
+          "pipe": true
+        },
+        {
+          "command": "echo '```'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
+    },
+    "javascript": {
+      "version": true,
+      "getPublishedVersion": "node ../../.scripts/checkIfPublished.mjs ${ pkgFile.pkg.name } ${ pkg.tag ? pkg.tag : 'latest' }",
+      "publish": [
+        {
+          "command": "echo \"# pnpm Package Publish\"",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "echo '```'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "pnpm publish --access public --loglevel silly --no-git-checks",
+          "dryRunCommand": "pnpm publish --dry-run --access public",
+          "pipe": true
+        },
+        {
+          "command": "echo '```'",
+          "dryRunCommand": true,
+          "pipe": true
+        }
+      ]
+    }
+  },
+  "packages": {
+    "mizuki": {
+      "path": ".",
+      "manager": "rust"
+    },
+    "@mizuki/urql": {
+      "path": "packages/urql",
+      "manager": "javascript",
+      "dependencies": ["mizuki"]
+    }
+  }
+}

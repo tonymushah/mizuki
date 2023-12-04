@@ -145,7 +145,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!     .plugin(mizuki::MizukiPlugin::new("", schema))
+//!     .plugin(mizuki::MizukiPlugin::new("list-plugin", schema))
 //!     .setup(|app| {
 //!       app.manage(List::default());
 //!
@@ -194,7 +194,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!   .plugin(tauri_plugin_graphql::init(schema));
+//!   .plugin(mizuki::MizukiPlugin::new("subsciption", schema));
 //! ```
 //!
 //! ## Stability
@@ -256,9 +256,11 @@ where
       context: Some(context),
     }
   }
+  /// Get the actual SDL schema format
   pub fn sdl(&self) -> String {
     self.schema.sdl()
   }
+  /// Export the schema to a new file
   pub fn export_sdl<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
     let mut file = BufWriter::new(File::create(path)?);
     file.write_all(self.sdl().as_bytes())
