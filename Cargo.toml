@@ -19,7 +19,6 @@ async-graphql = "6"
 
 [features]
 log = [ "async-graphql/log" ]
-tracing = [ "async-graphql/tracing" ]
 opentelemetry = [ "async-graphql/opentelemetry" ]
 bson = [ "async-graphql/bson" ]
 chrono = [ "async-graphql/chrono" ]
