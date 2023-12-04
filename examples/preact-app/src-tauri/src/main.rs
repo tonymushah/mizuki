@@ -34,7 +34,10 @@ impl Subscription {
 }
 
 fn main() {
-  let my_plugin = mizuki::MizukiPlugin::new("mizuki-test", Schema::new(Query, EmptyMutation, Subscription));
+  let my_plugin = mizuki::MizukiPlugin::new(
+    "mizuki-test",
+    Schema::new(Query, EmptyMutation, Subscription),
+  );
   my_plugin.export_sdl("../myschema.graphqls").unwrap();
   tauri::Builder::default()
     .plugin(my_plugin)
