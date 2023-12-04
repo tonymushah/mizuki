@@ -2,7 +2,7 @@
   "name": "@mizuki/urql",
   "version": "0.1.0",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
-  "author": "Jonas Kruckenberg",
+  "author": "Jonas Kruckenberg, Tony Mushah",
   "license": "MIT",
   "repository": "https://github.com/tonymushah/mizuki",
   "homepage": "https://github.com/tonymushah/mizuki/tree/main/packages/urql",

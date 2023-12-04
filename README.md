@@ -1,17 +1,24 @@
-# Tauri Plugin graphql
+# Mizuki
 
 [![Crates.io][crates-badge]][crates-url]
 [![Documentation][docs-badge]][docs-url]
 [![MIT licensed][mit-badge]][mit-url]
 
-[crates-badge]: https://img.shields.io/crates/v/tauri-plugin-graphql.svg
-[crates-url]: https://crates.io/crates/tauri-plugin-graphql
-[docs-badge]: https://img.shields.io/docsrs/tauri-plugin-graphql.svg
-[docs-url]: https://docs.rs/tauri-plugin-graphql
+[crates-badge]: https://img.shields.io/crates/v/mizuki.svg
+[crates-url]: https://crates.io/crates/mizuki
+[docs-badge]: https://img.shields.io/docsrs/mizuki.svg
+[docs-url]: https://docs.rs/mizuki
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: LICENSE
 
-A plugin for Tauri that enables type-safe IPC through GraphQL.
+A toolkit for building Tauri plugins that enables type-safe IPC through GraphQL.
+
+## Notice
+
+This project is a fork from [JonasKruckenberg/tauri-plugin-graphql][initial-repo].
+
+But I thought that it would be a great a idea to push the plugin futher
+and create a toolkit for building GraphQL Tauri Plugins.
 
 ## Install
 
@@ -19,17 +26,17 @@ A plugin for Tauri that enables type-safe IPC through GraphQL.
 
 ```toml
 [dependencies]
-tauri-plugin-graphql = "2.0.0"
+mizuki = "0.1.0"
 ```
 
 ### JavaScript
 
-The only client-side adapter currently is `tauri-plugin-graphql-urql`, a custom exchange for [`urql`]. 
+The only client-side adapter currently is `@mizuki/urql`, a custom exchange for [`urql`].
 If you need adapters for other GraphQL clients, open a PR!
 
 | Package                       | Version (click for changelogs) |
 |-------------------------------|--------------------------------|
-| [`tauri-plugin-graphql-urql`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-changelog]
+| [`@mizuki/urql`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-changelog]
 
 ## Usage
 
@@ -75,7 +82,8 @@ fn main() {
     );
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_graphql::init(schema))
+        // The plugin name is required
+        .plugin(mizuki::MizukiPlugin::new("todo-plugin", schema))
         .run(tauri::generate_context!())
         .expect("failed to run app");
 }
@@ -91,10 +99,11 @@ PRs are welcome!
 
 ## License
 
-[MIT © Jonas Kruckenberg](./LICENSE)
+[MIT © Tony Mushah](./LICENSE)
 
-[`tauri-plugin-graphql-urql`]: packages/urql
+[`@mizuki/urql`]: packages/urql
 [urql-adapter-version-badge]: https://img.shields.io/npm/v/tauri-plugin-graphql-urql?label=%20
 [urql-adapter-changelog]: packages/urql/CHANGELOG.md
 [`urql`]: https://formidable.com/open-source/urql/
 [`async_graphql::Schema`]: https://docs.rs/async-graphql/latest/async_graphql/struct.Schema.html
+[initial-repo]: https://github.com/JonasKruckenberg/tauri-plugin-graphql
