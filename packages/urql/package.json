@@ -1,5 +1,5 @@
 {
-  "name": "mizuki-urql",
+  "name": "mizuki-urql-adapter",
   "version": "0.1.0",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",

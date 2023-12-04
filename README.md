@@ -36,7 +36,7 @@ If you need adapters for other GraphQL clients, open a PR!
 
 | Package                       | Version (click for changelogs) |
 |-------------------------------|--------------------------------|
-| [`mizuki-urql`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-url]
+| [`mizuki-urql-adapter`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-url]
 
 ## Usage
 
@@ -101,9 +101,9 @@ PRs are welcome!
 
 [MIT © Tony Mushah](./LICENSE)
 
-[`@mizuki/urql`]: packages/urql
-[urql-adapter-version-badge]: https://img.shields.io/npm/v/mizuki-urql?label=%20
-[urql-adapter-url]: https://www.npmjs.com/package/mizuki-urql
+[`mizuki-urql-adapter`]: packages/urql
+[urql-adapter-version-badge]: https://img.shields.io/npm/v/mizuki-urql-adapter?label=%20
+[urql-adapter-url]: https://www.npmjs.com/package/mizuki-urql-adapter
 [`urql`]: https://formidable.com/open-source/urql/
 [`async_graphql::Schema`]: https://docs.rs/async-graphql/latest/async_graphql/struct.Schema.html
 [initial-repo]: https://github.com/JonasKruckenberg/tauri-plugin-graphql

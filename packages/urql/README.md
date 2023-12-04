@@ -1,4 +1,4 @@
-# mizuki-urql
+# mizuki-urql-adapter
 
 [![Npm][npm-badge]][npm-url]
 
@@ -7,11 +7,11 @@ Custom `urql` exchange that uses Tauri's IPC system to resolve queries against a
 ## Install
 
 ```console
-$ pnpm add mizuki-urql
+$ pnpm add mizuki-urql-adapter
 # or
-$ npm install mizuki-urql
+$ npm install mizuki-urql-adapter
 # or
-$ yarn add mizuki-urql
+$ yarn add mizuki-urql-adapter
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ You need to register the plugin with Tauri first! Please see the [top-level Read
 Import and use the custom exchange to connect to the GraphQL endpoint exposed over IPC.
 
 ```javascript
-import { invokeExchange } from "mizuki-urql";
+import { invokeExchange } from "mizuki-urql-adapter";
 
 const client = createClient({
   url: "graphql", // this value is important, don't touch
@@ -57,7 +57,7 @@ function Hero() {
 This adapter also supports subscriptions.
 
 ```javascript
-import { subscriptionExchange } from "mizuki-urql";
+import { subscriptionExchange } from "mizuki-urql-adapter";
 import { createClient } from "@urql/preact";
 
 const client = createClient({
@@ -97,5 +97,5 @@ function TestSubscription() {
 [MIT © Tony Mushah](./LICENSE)
 
 [top-level Readme]: ../../README.md
-[npm-url]: https://www.npmjs.com/package/mizuki-urql
-[npm-badge]: https://img.shields.io/npm/v/mizuki-urql
+[npm-url]: https://www.npmjs.com/package/mizuki-urql-adapter
+[npm-badge]: https://img.shields.io/npm/v/mizuki-urql-adapter
