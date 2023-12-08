@@ -210,8 +210,10 @@
 //! [`Commands`]: https://tauri.studio/docs/guides/command
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
-
+mod traits;
 mod subscription;
+
+pub use traits::MizukiPluginTrait;
 
 use subscription::SubscriptionRequest;
 
