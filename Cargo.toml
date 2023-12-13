@@ -1,6 +1,6 @@
 [package]
 name = "mizuki"
-version = "0.1.0"
+version = "0.2.0-alpha"
 authors = [ "Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>" ]
 description = "A toolkit for building Tauri Plugins that enables type-safe IPC through GraphQL."
 edition = "2021"
