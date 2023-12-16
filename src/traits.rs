@@ -1,10 +1,12 @@
-use std::{path::PathBuf, io::{BufWriter, Write}, fs::File};
+use std::{
+  fs::File,
+  io::{BufWriter, Write},
+  path::PathBuf,
+};
 
 use crate::subscription::SubscriptionRequest;
 use async_graphql::{futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType};
-use tauri::{
-  plugin::Plugin, InvokeError, Manager, Runtime,
-};
+use tauri::{plugin::Plugin, InvokeError, Manager, Runtime};
 
 pub trait MizukiPluginTrait<R, Query, Mutation, Subscription>: Plugin<R>
 where

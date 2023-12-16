@@ -210,8 +210,8 @@
 //! [`Commands`]: https://tauri.studio/docs/guides/command
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
-mod traits;
 mod subscription;
+mod traits;
 
 pub use traits::MizukiPluginTrait;
 
@@ -301,7 +301,7 @@ where
   }
 }
 
-impl<R, Query, Mutation, Subscription, D> Plugin<R>
+impl<R, Query, Mutation, Subscription, D> MizukiPluginTrait<R, Query, Mutation, Subscription>
   for MizukiPlugin<D, Query, Mutation, Subscription>
 where
   R: Runtime,
@@ -310,10 +310,10 @@ where
   Subscription: SubscriptionType + 'static,
   D: Any + Clone + Send + Sync,
 {
-  fn name(&self) -> &'static str {
-    self.name
+  fn schema(&self) -> Schema<Query, Mutation, Subscription> {
+    self.schema.clone()
   }
-  fn extend_api(&mut self, invoke: Invoke<R>) {
+  fn extend_api(&mut self, invoke: tauri::Invoke<R>) {
     let context = self.context.clone();
     let window = invoke.message.window();
 
@@ -370,5 +370,21 @@ where
         cmd
       )),
     }
+  }
+}
+impl<R, Query, Mutation, Subscription, D> Plugin<R>
+  for MizukiPlugin<D, Query, Mutation, Subscription>
+where
+  R: Runtime,
+  Query: ObjectType + 'static,
+  Mutation: ObjectType + 'static,
+  Subscription: SubscriptionType + 'static,
+  D: Any + Clone + Send + Sync,
+{
+  fn name(&self) -> &'static str {
+    self.name
+  }
+  fn extend_api(&mut self, invoke: Invoke<R>) {
+    <Self as MizukiPluginTrait<R, Query, Mutation, Subscription>>::extend_api(self, invoke);
   }
 }
