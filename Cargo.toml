@@ -1,6 +1,6 @@
 [package]
 name = "mizuki"
-version = "0.2.0-alpha.2"
+version = "0.2.0-alpha.3"
 authors = [ "Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>" ]
 description = "A toolkit for building Tauri Plugins that enables type-safe IPC through GraphQL."
 edition = "2021"
@@ -15,7 +15,7 @@ keywords = [ "tauri-plugin", "graphql" ]
 serde = { version = "1", features = [ "derive" ] }
 serde_json = "1"
 tauri = "1"
-async-graphql = "6"
+async-graphql = "7"
 
 [features]
 log = [ "async-graphql/log" ]
@@ -25,7 +25,6 @@ chrono = [ "async-graphql/chrono" ]
 chrono-tz = [ "async-graphql/chrono-tz" ]
 url = [ "async-graphql/url" ]
 uuid = [ "async-graphql/uuid" ]
-uuid08 = [ "async-graphql/uuid08" ]
 string_number = [ "async-graphql/string_number" ]
 dataloader = [ "async-graphql/dataloader" ]
 secrecy = [ "async-graphql/secrecy" ]

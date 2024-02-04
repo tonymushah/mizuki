@@ -122,7 +122,7 @@ function makeInvokeSource(
 
         console.debug(response)
 
-        if (!ok) throw new Error(payload.error)
+        if (!ok) throw new Error(payload.errors)
 
         next(makeResult(operation, payload))
       })
@@ -168,10 +168,11 @@ export function subscriptionExchange(name: string) {
   return subEx({
     forwardSubscription: operation => ({
       subscribe: sink => {
-        let unlisten: () => void = () => {}
 
         const id = Math.floor(Math.random() * 10000000)
-
+        
+        let unlisten: () => void = () => {}
+        
         Promise.resolve()
           .then(async () =>
             listen(`graphql://${id}`, (event: Event<string | null>) => {

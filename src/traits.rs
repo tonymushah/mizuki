@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::subscription::SubscriptionRequest;
-use async_graphql::{futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType};
+use async_graphql::{futures_util::StreamExt, BatchRequest, ObjectType, Request, Schema, SubscriptionType};
 use tauri::{plugin::Plugin, InvokeError, Manager, Runtime};
 
 pub trait MizukiPluginTrait<R, Query, Mutation, Subscription>: Plugin<R>
@@ -18,6 +18,12 @@ where
   fn schema(&self) -> Schema<Query, Mutation, Subscription>;
   fn sdl(&self) -> String {
     self.schema().sdl()
+  }
+  fn on_each_sub_request(request: Request) -> Request {
+    request
+  }
+  fn on_each_batch_request(request: BatchRequest) -> BatchRequest {
+    request
   }
   /// Export the schema to a new file
   fn export_sdl(&self, path: PathBuf) -> std::io::Result<()> {
@@ -35,7 +41,7 @@ where
           .map_err(InvokeError::from_serde_json)?;
 
         let resp = schema
-          .execute_batch(req.data(window.app_handle()).data(window))
+          .execute_batch(Self::on_each_batch_request(req.data(window.app_handle()).data(window)))
           .await;
 
         let str = serde_json::to_string(&resp).map_err(InvokeError::from_serde_json)?;
@@ -47,7 +53,7 @@ where
           .map_err(InvokeError::from_serde_json)?;
 
         let subscription_window = window.clone();
-        let mut stream = schema.execute_stream(req.inner.data(window.app_handle()).data(window));
+        let mut stream = schema.execute_stream(Self::on_each_sub_request(req.inner.data(window.app_handle()).data(window)));
 
         let event_id = &format!("graphql://{}", req.id);
 
