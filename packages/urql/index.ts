@@ -1,14 +1,15 @@
-import {invoke} from '@tauri-apps/api'
-import {listen, Event} from '@tauri-apps/api/event'
+import { invoke } from '@tauri-apps/api'
+import { listen, Event } from '@tauri-apps/api/event'
 import {
   Exchange,
+  ExecutionResult,
   makeErrorResult,
   makeResult,
   Operation,
   OperationResult,
   subscriptionExchange as subEx
 } from '@urql/core'
-import {print} from 'graphql'
+import { print } from 'graphql'
 import {
   filter,
   make,
@@ -39,66 +40,65 @@ import {
  */
 export const invokeExchange: (name: string) => Exchange =
   name =>
-  ({forward}) => {
-    return ops$ => {
-      const sharedOps$ = share(ops$)
-      const fetchResults$ = pipe(
-        sharedOps$,
-        filter(op => op.kind === 'query' || op.kind === 'mutation'),
-        mergeMap(operation => {
-          const {key} = operation
-          const teardown$ = pipe(
-            sharedOps$,
-            filter(op => op.kind === 'teardown' && op.key === key)
-          )
+    ({ forward }) => {
+      return ops$ => {
+        const sharedOps$ = share(ops$)
+        const fetchResults$ = pipe(
+          sharedOps$,
+          filter(op => op.kind === 'query' || op.kind === 'mutation'),
+          mergeMap(operation => {
+            const { key } = operation
+            const teardown$ = pipe(
+              sharedOps$,
+              filter(op => op.kind === 'teardown' && op.key === key)
+            )
 
-          const args = {
-            query: print(operation.query),
-            variables: operation.variables || undefined
-          }
-
-          const command = `plugin:${name}|${operation.context.url}`
-
-          console.debug({
-            type: 'invokeRequest',
-            message: 'An invoke request is being executed.',
-            operation,
-            data: {
-              command,
-              args
+            const args = {
+              query: print(operation.query),
+              variables: operation.variables || undefined
             }
-          })
 
-          return pipe(
-            makeInvokeSource(operation, command, args),
-            takeUntil(teardown$),
-            onPush(result => {
-              const error = !result.data ? result.error : undefined
+            const command = `plugin:${name}|${operation.context.url}`
 
-              console.debug({
-                type: error ? 'invokeError' : 'invokeSuccess',
-                message: `A ${
-                  error ? 'failed' : 'successful'
-                } invoke response has been returned.`,
-                operation,
-                data: {
-                  value: error || result
-                }
-              })
+            console.debug({
+              type: 'invokeRequest',
+              message: 'An invoke request is being executed.',
+              operation,
+              data: {
+                command,
+                args
+              }
             })
-          )
-        })
-      )
 
-      const forward$ = pipe(
-        sharedOps$,
-        filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
-        forward
-      )
+            return pipe(
+              makeInvokeSource(operation, command, args),
+              takeUntil(teardown$),
+              onPush(result => {
+                const error = !result.data ? result.error : undefined
 
-      return merge([fetchResults$, forward$])
+                console.debug({
+                  type: error ? 'invokeError' : 'invokeSuccess',
+                  message: `A ${error ? 'failed' : 'successful'
+                    } invoke response has been returned.`,
+                  operation,
+                  data: {
+                    value: error || result
+                  }
+                })
+              })
+            )
+          })
+        )
+
+        const forward$ = pipe(
+          sharedOps$,
+          filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
+          forward
+        )
+
+        return merge([fetchResults$, forward$])
+      }
     }
-  }
 
 type Response = [body: string, isOk: boolean]
 
@@ -107,7 +107,7 @@ function makeInvokeSource(
   command: string,
   invokeArgs: Record<string, any>
 ): Source<OperationResult> {
-  return make(({next, complete}) => {
+  return make(({ next, complete }) => {
     let ended = false
 
     Promise.resolve()
@@ -117,12 +117,10 @@ function makeInvokeSource(
         return invoke<Response>(command, invokeArgs)
       })
       .then(response => {
-        const [body, ok] = response!
-        const payload = JSON.parse(body)
+        const [body,] = response!
+        const payload: ExecutionResult = JSON.parse(body)
 
         console.debug(response)
-
-        if (!ok) throw new Error(payload.errors)
 
         next(makeResult(operation, payload))
       })
@@ -170,9 +168,9 @@ export function subscriptionExchange(name: string) {
       subscribe: sink => {
 
         const id = Math.floor(Math.random() * 10000000)
-        
-        let unlisten: () => void = () => {}
-        
+
+        let unlisten: () => void = () => { }
+
         Promise.resolve()
           .then(async () =>
             listen(`graphql://${id}`, (event: Event<string | null>) => {
@@ -182,7 +180,7 @@ export function subscriptionExchange(name: string) {
           )
           .then(_unlisten => (unlisten = _unlisten))
           .then(() =>
-            invoke(`plugin:${name}|subscriptions`, {...operation, id})
+            invoke(`plugin:${name}|subscriptions`, { ...operation, id })
           )
           .catch(err => console.error(err))
         return {

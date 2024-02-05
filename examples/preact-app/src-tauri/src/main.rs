@@ -4,8 +4,7 @@
 )]
 
 use async_graphql::{
-  futures_util::{self, stream::Stream},
-  EmptyMutation, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription,
+  futures_util::{self, stream::Stream}, EmptyMutation, Error, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription
 };
 
 #[derive(SimpleObject, Debug, Clone)]
@@ -21,6 +20,9 @@ impl Query {
     Ok(Human {
       name: "Luke Skywalker".to_string(),
     })
+  }
+  async fn not_hero(&self) -> GraphQLResult<Human> {
+    Err(Error::new("Only heroes can be fetched!"))
   }
 }
 
