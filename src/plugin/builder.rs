@@ -7,6 +7,9 @@ use super::{
   MizukiPlugin, OnBatchRequest, OnDrop, OnEvent, OnPageLoad, OnSubRequst, OnWebviewReady, SetupHook,
 };
 
+///
+/// This [`self::Builder`] struct share the same build function as [`tauri::plugin::Builder`]
+///
 pub struct Builder<R, Q, M, S>
 where
   R: Runtime,
@@ -33,6 +36,7 @@ where
   M: ObjectType + 'static,
   S: SubscriptionType + 'static,
 {
+  /// Creates a new Plugin builder.
   pub fn new(name: &'static str, schema: Schema<Q, M, S>) -> Self {
     Self {
       name,
@@ -47,7 +51,19 @@ where
       on_drop: None,
     }
   }
-
+  /// Same as [`tauri::plugin::Builder::js_init_script`]
+  ///
+  /// Sets the provided JavaScript to be run after the global object has been created,
+  /// but before the HTML document has been parsed and before any other script included by the HTML document is run.
+  ///
+  /// Since it runs on all top-level document and child frame page navigations,
+  /// it's recommended to check the `window.location` to guard your script from running on unexpected origins.
+  ///
+  /// The script is wrapped into its own context with `(function () { /* your script here */ })();`,
+  /// so global variables must be assigned to `window` instead of implicitly declared.
+  ///
+  /// Note that calling this function multiple times overrides previous values.
+  ///
   #[must_use]
   pub fn js_init_script(mut self, js_init_script: String) -> Self {
     self.js_init_script = Some(js_init_script);
@@ -62,7 +78,8 @@ where
     self.setup.replace(Box::new(setup));
     self
   }
-
+  /// Callback invoked when the webview performs a navigation to a page.
+  /// Same as [`tauri::plugin::Builder::on_page_load`]
   #[must_use]
   pub fn on_page_load<F>(mut self, on_page_load: F) -> Self
   where
@@ -72,6 +89,7 @@ where
     self
   }
 
+  /// Same as [`tauri::plugin::Builder::on_webview_ready`]
   #[must_use]
   pub fn on_webview_ready<F>(mut self, on_webview_ready: F) -> Self
   where
@@ -81,6 +99,7 @@ where
     self
   }
 
+  /// Same as [`tauri::plugin::Builder::on_event`]
   #[must_use]
   pub fn on_event<F>(mut self, on_event: F) -> Self
   where
@@ -90,6 +109,7 @@ where
     self
   }
 
+  /// Same as [`tauri::plugin::Builder::on_drop`]
   #[must_use]
   pub fn on_drop<F>(mut self, on_drop: F) -> Self
   where
@@ -99,6 +119,8 @@ where
     self
   }
 
+  /// Register a callback when a batch_request is invoked 
+  /// Might be useful if you want a request cache system 
   #[must_use]
   pub fn on_batch_request<F>(mut self, on_batch_request: F) -> Self
   where
@@ -108,6 +130,8 @@ where
     self
   }
 
+  /// Register a callback when a subscription request is invoked 
+  /// Might be useful if you want a request cache system 
   #[must_use]
   pub fn on_sub_request<F>(mut self, on_sub_request: F) -> Self
   where
@@ -116,6 +140,7 @@ where
     self.on_sub_request = Box::new(on_sub_request);
     self
   }
+  /// Build the [`crate::MizukiPlugin`] 
   pub fn build(self) -> MizukiPlugin<R, Q, M, S> {
     MizukiPlugin {
       name: self.name,
