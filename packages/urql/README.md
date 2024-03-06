@@ -21,12 +21,12 @@ You need to register the plugin with Tauri first! Please see the [top-level Read
 Import and use the custom exchange to connect to the GraphQL endpoint exposed over IPC.
 
 ```javascript
-import { invokeExchange } from "mizuki-urql-adapter";
+import {invokeExchange} from 'mizuki-urql-adapter'
 
 const client = createClient({
-  url: "graphql", // this value is important, don't touch
-  exchanges: [invokeExchange("myPlugin")],
-});
+  url: 'graphql', // this value is important, don't touch
+  exchanges: [invokeExchange('myPlugin')]
+})
 
 const heroQuery = `
 query {
@@ -34,21 +34,19 @@ query {
     name
   }
 }
-`;
+`
 
 function Hero() {
   const [result, reexecuteQuery] = useQuery({
-    query: heroQuery,
-  });
+    query: heroQuery
+  })
 
-  const { data, fetching, error } = result;
+  const {data, fetching, error} = result
 
-  if (fetching) return <p>Loading...</p>;
-  if (error) return <p>Oh no... {error.message}</p>;
+  if (fetching) return <p>Loading...</p>
+  if (error) return <p>Oh no... {error.message}</p>
 
-  return (
-    <p>The hero is {data.hero.name}</p>
-  );
+  return <p>The hero is {data.hero.name}</p>
 }
 ```
 
@@ -57,38 +55,32 @@ function Hero() {
 This adapter also supports subscriptions.
 
 ```javascript
-import { subscriptionExchange } from "mizuki-urql-adapter";
-import { createClient } from "@urql/preact";
+import {subscriptionExchange} from 'mizuki-urql-adapter'
+import {createClient} from '@urql/preact'
 
 const client = createClient({
-  url: "graphql",
-  exchanges: [
-    subscriptionExchange("myPlugin")
-  ],
-});
+  url: 'graphql',
+  exchanges: [subscriptionExchange('myPlugin')]
+})
 
 const newMessages = `
   subscription MessageSub {
     helloWorld
   }
-`;
+`
 
 function handleSubscription(messages = [], response) {
-  return [response.helloWorld, ...messages];
-};
+  return [response.helloWorld, ...messages]
+}
 
 function TestSubscription() {
-  const [res] = useSubscription({ query: newMessages }, handleSubscription);
+  const [res] = useSubscription({query: newMessages}, handleSubscription)
 
   if (!res.data) {
-    return <p>No new messages</p>;
+    return <p>No new messages</p>
   }
 
-  return (
-        <p>
-          {res.data}
-        </p>
-  ); 
+  return <p>{res.data}</p>
 }
 ```
 

@@ -24,6 +24,28 @@ function TestQuery() {
     <p>The hero is {data?.hero.name ?? "not here"}</p>
   );
 }
+const testQueryErro = graphql(`
+  query notHero {
+    notHero {
+      name
+    }
+  }
+`);
+
+function TestQueryQueryError(){
+  const [res] = useQuery({
+    query: testQueryErro,
+  });
+
+  const { data, fetching, error } = res;
+
+  if (fetching) return <p>Loading...</p>;
+  if (error) return <p>Oh no... {error.graphQLErrors[0].message}</p>;
+
+  return (
+    <p>The hero is {data?.notHero.name ?? "not here"}</p>
+  );
+}
 
 const newMessages = graphql(`
   subscription MessageSub {
@@ -51,6 +73,7 @@ function TestSubscription() {
 export function App() {
   return <>
     <TestQuery />
+    <TestQueryQueryError/>
     <TestSubscription />
   </>
 }

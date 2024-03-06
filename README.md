@@ -26,7 +26,7 @@ and create a toolkit for building GraphQL Tauri Plugins.
 
 ```toml
 [dependencies]
-mizuki = "0.1.0"
+mizuki = "0.2.0"
 ```
 
 ### JavaScript
@@ -74,16 +74,18 @@ impl Query {
     }
 }
 
-fn main() {
-    let schema = Schema::new(
+fn init_plugin<R: tauri::Runtime>() -> mizuki::MizukiPlugin<R, Query, EmptyMutation, EmptySubscription> {
+    mizuki::Builder::new("todo-plugin", Schema::new(
         Query,
         EmptyMutation,
         EmptySubscription,
-    );
+    )).build()
+}
 
+fn main() {
     tauri::Builder::default()
         // The plugin name is required
-        .plugin(mizuki::MizukiPlugin::new("todo-plugin", schema))
+        .plugin(init_plugin())
         .run(tauri::generate_context!())
         .expect("failed to run app");
 }

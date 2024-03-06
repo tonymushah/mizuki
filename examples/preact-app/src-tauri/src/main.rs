@@ -3,10 +3,13 @@
   windows_subsystem = "windows"
 )]
 
+use std::{fs::File, io::{BufWriter, Write}, path::Path};
+
 use async_graphql::{
-  futures_util::{self, stream::Stream},
-  EmptyMutation, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription,
+  futures_util::{self, stream::Stream}, EmptyMutation, Error, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription
 };
+use mizuki::MizukiPlugin;
+use tauri::Runtime;
 
 #[derive(SimpleObject, Debug, Clone)]
 struct Human {
@@ -22,6 +25,9 @@ impl Query {
       name: "Luke Skywalker".to_string(),
     })
   }
+  async fn not_hero(&self) -> GraphQLResult<Human> {
+    Err(Error::new("Only heroes can be fetched!"))
+  }
 }
 
 pub struct Subscription;
@@ -33,14 +39,24 @@ impl Subscription {
   }
 }
 
+fn new_mizuki_test<R: Runtime>() -> MizukiPlugin<R, Query, EmptyMutation, Subscription> {
+  mizuki::Builder::new("mizuki-test", Schema::new(Query, EmptyMutation, Subscription)).setup(|_app, _config, s| {
+    #[cfg(debug_assertions)]
+    {
+      let sdl = s.sdl();
+      let sdl_file = File::create(Path::new("../myschema.graphqls"))?;
+      let mut buf_write = BufWriter::new(sdl_file);
+      buf_write.write_all(sdl.as_bytes())?;
+      buf_write.flush()?;
+    }
+    Ok(())
+  }).build()
+}
+
 fn main() {
-  let my_plugin = mizuki::MizukiPlugin::new(
-    "mizuki-test",
-    Schema::new(Query, EmptyMutation, Subscription),
-  );
-  my_plugin.export_sdl("../myschema.graphqls").unwrap();
+  
   tauri::Builder::default()
-    .plugin(my_plugin)
+    .plugin(new_mizuki_test())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

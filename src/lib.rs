@@ -71,7 +71,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!     .plugin(mizuki::MizukiPlugin::new("todo-plugin", schema));
+//!     .plugin(mizuki::Builder::new("todo-plugin", schema).build());
 //! ```
 //!
 //! ### Mutations
@@ -145,7 +145,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!     .plugin(mizuki::MizukiPlugin::new("list-plugin", schema))
+//!     .plugin(mizuki::Builder::new("list-plugin", schema).build())
 //!     .setup(|app| {
 //!       app.manage(List::default());
 //!
@@ -194,7 +194,7 @@
 //! );
 //!
 //! tauri::Builder::default()
-//!   .plugin(mizuki::MizukiPlugin::new("subsciption", schema));
+//!   .plugin(mizuki::Builder::new("subsciption", schema).build());
 //! ```
 //!
 //! ## Stability
@@ -203,170 +203,14 @@
 //! directly implements an invoke handler instead of reyling on the
 //! [`tauri::generate_handler`] macro.
 //! Since the invoke handler implementation is not considered stable and might
-//! change between releases **this plugin has no backwards compatibility
+//! change between releases **this plugin builder has no backwards compatibility
 //! guarantees**.
 //!
 //! [`Stream`]: https://docs.rs/futures-util/latest/futures_util/stream/trait.Stream.html
 //! [`Commands`]: https://tauri.studio/docs/guides/command
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
+pub(crate) mod subscription;
+pub(crate) mod plugin;
 
-mod subscription;
-
-use subscription::SubscriptionRequest;
-
-pub use async_graphql;
-use async_graphql::{futures_util::StreamExt, BatchRequest, ObjectType, Schema, SubscriptionType};
-use std::{
-  any::Any,
-  fs::File,
-  io::{BufWriter, Write},
-  path::Path,
-};
-use tauri::{plugin::Plugin, Invoke, InvokeError, Manager, Runtime};
-
-#[derive(Clone)]
-pub struct MizukiPlugin<D, Query, Mutation, Subscription>
-where
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-  D: Any + Clone + Send + Sync,
-{
-  name: &'static str,
-  schema: Schema<Query, Mutation, Subscription>,
-  context: Option<D>,
-}
-
-impl<Query, Mutation, Subscription, D> MizukiPlugin<D, Query, Mutation, Subscription>
-where
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-  D: Any + Clone + Send + Sync,
-{
-  pub fn new_with_context(
-    name: &'static str,
-    schema: Schema<Query, Mutation, Subscription>,
-    context: D,
-  ) -> Self {
-    Self {
-      name,
-      schema,
-      context: Some(context),
-    }
-  }
-  /// Get the actual SDL schema format
-  pub fn sdl(&self) -> String {
-    self.schema.sdl()
-  }
-  /// Export the schema to a new file
-  pub fn export_sdl<P: AsRef<Path>>(&self, path: P) -> std::io::Result<()> {
-    let mut file = BufWriter::new(File::create(path)?);
-    file.write_all(self.sdl().as_bytes())
-  }
-  pub fn drop_context(self) -> MizukiPlugin<(), Query, Mutation, Subscription> {
-    MizukiPlugin {
-      name: self.name,
-      schema: self.schema,
-      context: None::<()>,
-    }
-  }
-}
-
-impl<Query, Mutation, Subscription> MizukiPlugin<(), Query, Mutation, Subscription>
-where
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-{
-  pub fn new(name: &'static str, schema: Schema<Query, Mutation, Subscription>) -> Self {
-    Self {
-      name,
-      schema,
-      context: None::<()>,
-    }
-  }
-  pub fn add_context<D: Any + Clone + Send + Sync>(
-    self,
-    context: D,
-  ) -> MizukiPlugin<D, Query, Mutation, Subscription> {
-    MizukiPlugin {
-      name: self.name,
-      schema: self.schema,
-      context: Some(context),
-    }
-  }
-}
-
-impl<R, Query, Mutation, Subscription, D> Plugin<R>
-  for MizukiPlugin<D, Query, Mutation, Subscription>
-where
-  R: Runtime,
-  Query: ObjectType + 'static,
-  Mutation: ObjectType + 'static,
-  Subscription: SubscriptionType + 'static,
-  D: Any + Clone + Send + Sync,
-{
-  fn name(&self) -> &'static str {
-    self.name
-  }
-  fn extend_api(&mut self, invoke: Invoke<R>) {
-    let context = self.context.clone();
-    let window = invoke.message.window();
-
-    let schema = self.schema.clone();
-
-    match invoke.message.command() {
-      "graphql" => invoke.resolver.respond_async(async move {
-        let req: BatchRequest = serde_json::from_value(invoke.message.payload().clone())
-          .map_err(InvokeError::from_serde_json)?;
-
-        let resp = if let Some(data) = context {
-          schema
-            .execute_batch(
-              req
-                .data(window.app_handle())
-                .data(window)
-                .data(data.clone()),
-            )
-            .await
-        } else {
-          schema
-            .execute_batch(req.data(window.app_handle()).data(window))
-            .await
-        };
-
-        let str = serde_json::to_string(&resp).map_err(InvokeError::from_serde_json)?;
-
-        Ok((str, resp.is_ok()))
-      }),
-      "subscriptions" => invoke.resolver.respond_async(async move {
-        let req: SubscriptionRequest = serde_json::from_value(invoke.message.payload().clone())
-          .map_err(InvokeError::from_serde_json)?;
-
-        let subscription_window = window.clone();
-        let mut stream = if let Some(data) = context {
-          schema.execute_stream(req.inner.data(window.app_handle()).data(window).data(data))
-        } else {
-          schema.execute_stream(req.inner.data(window.app_handle()).data(window))
-        };
-
-        let event_id = &format!("graphql://{}", req.id);
-
-        while let Some(result) = stream.next().await {
-          let str = serde_json::to_string(&result).map_err(InvokeError::from_serde_json)?;
-
-          subscription_window.emit(event_id, str)?;
-        }
-        subscription_window.emit(event_id, Option::<()>::None)?;
-
-        Ok(())
-      }),
-      cmd => invoke.resolver.reject(format!(
-        "Invalid endpoint \"{}\". Valid endpoints are: \"graphql\", \"subscriptions\".",
-        cmd
-      )),
-    }
-  }
-}
+pub use plugin::{Builder, MizukiPlugin};
