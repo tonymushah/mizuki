@@ -1,6 +1,6 @@
 {
   "name": "mizuki-urql-adapter",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",
   "license": "MIT",
@@ -23,13 +23,13 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@tauri-apps/api": "1",
-    "@urql/core": "4",
+    "@tauri-apps/api": "2",
+    "@urql/core": "5",
     "wonka": "6"
   },
   "devDependencies": {
     "graphql": "16.6.0",
-    "tsup": "6.5.0",
-    "typescript": "4.9.4"
+    "tsup": "8",
+    "typescript": "5"
   }
 }
