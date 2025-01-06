@@ -176,12 +176,20 @@ export function subscriptionExchange(
       subscribe: sink => {
         const id = Math.floor(Math.random() * 10000000)
         const subId = `${Math.floor(Math.random() * 10000000)}`
-        const unlistens: (() => void)[] = [
+        let unlistens: (() => void)[] = [
           () => {
             appWebview.emit(subEndEventLabel, subId)
           }
         ]
 
+        const unlisten = () => {
+          unlistens.forEach(u => u())
+          unlistens = []
+        }
+        window.addEventListener('beforeunload', unlisten)
+        unlistens.push(() =>
+          window.removeEventListener('beforeunload', unlisten)
+        )
         Promise.resolve()
           .then(async () =>
             appWebview.listen(
@@ -200,11 +208,10 @@ export function subscriptionExchange(
               sub_id: subId
             })
           )
+          //.then(() => sink.complete())
           .catch(err => console.error(err))
         return {
-          unsubscribe: () => {
-            unlistens.forEach(u => u())
-          }
+          unsubscribe: unlisten
         }
       }
     })

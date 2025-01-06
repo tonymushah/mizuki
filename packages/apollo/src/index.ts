@@ -78,12 +78,18 @@ export class SubscriptionsLink extends ApolloLink {
       const command = `plugin:${this.pluginName}|subscriptions`
       const id = Math.floor(Math.random() * 10000000)
       const subId = `${Math.floor(Math.random() * 10000000)}`
-      const unlistens: (() => void)[] = [
+      let unlistens: (() => void)[] = [
         () => {
           appWebview.emit(this.subEndEventLabel, subId)
         }
       ]
 
+      const unlisten = () => {
+        unlistens.forEach(u => u())
+        unlistens = []
+      }
+      window.addEventListener('beforeunload', unlisten)
+      unlistens.push(() => window.removeEventListener('beforeunload', unlisten))
       Promise.resolve()
         .then(async () =>
           appWebview.listen(
@@ -103,9 +109,7 @@ export class SubscriptionsLink extends ApolloLink {
           })
         )
         .catch(err => console.error(err))
-      return () => {
-        unlistens.forEach(u => u())
-      }
+      return unlisten
     })
   }
 }
