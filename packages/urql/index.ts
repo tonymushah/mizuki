@@ -1,5 +1,6 @@
-import { invoke } from '@tauri-apps/api'
-import { listen, Event } from '@tauri-apps/api/event'
+import {invoke} from '@tauri-apps/api/core'
+import {Event} from '@tauri-apps/api/event'
+import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
 import {
   Exchange,
   ExecutionResult,
@@ -9,7 +10,7 @@ import {
   OperationResult,
   subscriptionExchange as subEx
 } from '@urql/core'
-import { print } from 'graphql'
+import {print} from 'graphql'
 import {
   filter,
   make,
@@ -40,65 +41,66 @@ import {
  */
 export const invokeExchange: (name: string) => Exchange =
   name =>
-    ({ forward }) => {
-      return ops$ => {
-        const sharedOps$ = share(ops$)
-        const fetchResults$ = pipe(
-          sharedOps$,
-          filter(op => op.kind === 'query' || op.kind === 'mutation'),
-          mergeMap(operation => {
-            const { key } = operation
-            const teardown$ = pipe(
-              sharedOps$,
-              filter(op => op.kind === 'teardown' && op.key === key)
-            )
+  ({forward}) => {
+    return ops$ => {
+      const sharedOps$ = share(ops$)
+      const fetchResults$ = pipe(
+        sharedOps$,
+        filter(op => op.kind === 'query' || op.kind === 'mutation'),
+        mergeMap(operation => {
+          const {key} = operation
+          const teardown$ = pipe(
+            sharedOps$,
+            filter(op => op.kind === 'teardown' && op.key === key)
+          )
 
-            const args = {
-              query: print(operation.query),
-              variables: operation.variables || undefined
+          const args = {
+            query: print(operation.query),
+            variables: operation.variables || undefined
+          }
+
+          const command = `plugin:${name}|${operation.context.url}`
+
+          console.debug({
+            type: 'invokeRequest',
+            message: 'An invoke request is being executed.',
+            operation,
+            data: {
+              command,
+              args
             }
-
-            const command = `plugin:${name}|${operation.context.url}`
-
-            console.debug({
-              type: 'invokeRequest',
-              message: 'An invoke request is being executed.',
-              operation,
-              data: {
-                command,
-                args
-              }
-            })
-
-            return pipe(
-              makeInvokeSource(operation, command, args),
-              takeUntil(teardown$),
-              onPush(result => {
-                const error = !result.data ? result.error : undefined
-
-                console.debug({
-                  type: error ? 'invokeError' : 'invokeSuccess',
-                  message: `A ${error ? 'failed' : 'successful'
-                    } invoke response has been returned.`,
-                  operation,
-                  data: {
-                    value: error || result
-                  }
-                })
-              })
-            )
           })
-        )
 
-        const forward$ = pipe(
-          sharedOps$,
-          filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
-          forward
-        )
+          return pipe(
+            makeInvokeSource(operation, command, args),
+            takeUntil(teardown$),
+            onPush(result => {
+              const error = !result.data ? result.error : undefined
 
-        return merge([fetchResults$, forward$])
-      }
+              console.debug({
+                type: error ? 'invokeError' : 'invokeSuccess',
+                message: `A ${
+                  error ? 'failed' : 'successful'
+                } invoke response has been returned.`,
+                operation,
+                data: {
+                  value: error || result
+                }
+              })
+            })
+          )
+        })
+      )
+
+      const forward$ = pipe(
+        sharedOps$,
+        filter(op => op.kind !== 'query' && op.kind !== 'mutation'),
+        forward
+      )
+
+      return merge([fetchResults$, forward$])
     }
+  }
 
 type Response = [body: string, isOk: boolean]
 
@@ -107,7 +109,7 @@ function makeInvokeSource(
   command: string,
   invokeArgs: Record<string, any>
 ): Source<OperationResult> {
-  return make(({ next, complete }) => {
+  return make(({next, complete}) => {
     let ended = false
 
     Promise.resolve()
@@ -117,7 +119,7 @@ function makeInvokeSource(
         return invoke<Response>(command, invokeArgs)
       })
       .then(response => {
-        const [body,] = response!
+        const [body] = response!
         const payload: ExecutionResult = JSON.parse(body)
 
         console.debug(response)
@@ -159,32 +161,49 @@ function makeInvokeSource(
  * ```
  *
  * @param name Your plugin name
+ * @param [subEndEventLabel='sub_end'] the subscription end event label 
  * @returns
  */
 
-export function subscriptionExchange(name: string) {
+export function subscriptionExchange(
+  name: string,
+  subEndEventLabel: string = 'sub_end'
+) {
+  const appWebview = getCurrentWebviewWindow()
   return subEx({
     forwardSubscription: operation => ({
       subscribe: sink => {
-
         const id = Math.floor(Math.random() * 10000000)
-
-        let unlisten: () => void = () => { }
+        const subId = `${Math.floor(Math.random() * 10000000)}`
+        const unlistens: (() => void)[] = [
+          () => {
+            appWebview.emit(subEndEventLabel, subId)
+          }
+        ]
 
         Promise.resolve()
           .then(async () =>
-            listen(`graphql://${id}`, (event: Event<string | null>) => {
-              if (event.payload === null) return sink.complete()
-              sink.next(JSON.parse(event.payload))
-            })
+            appWebview.listen(
+              `graphql://${id}`,
+              (event: Event<string | null>) => {
+                if (event.payload === null) return sink.complete()
+                sink.next(JSON.parse(event.payload))
+              }
+            )
           )
-          .then(_unlisten => (unlisten = _unlisten))
+          .then(_unlisten => unlistens.push(_unlisten))
           .then(() =>
-            invoke(`plugin:${name}|subscriptions`, { ...operation, id })
+            invoke(`plugin:${name}|subscriptions`, {
+              ...operation,
+              id,
+              sub_id: subId
+            })
           )
           .catch(err => console.error(err))
         return {
-          unsubscribe: unlisten
+          unsubscribe: () => {
+            unlistens.forEach(u => u())
+          }
         }
       }
     })
@@ -209,8 +228,9 @@ export function subscriptionExchange(name: string) {
  * ```
  *
  * @param name Your plugin name
+ * @param subEndEventLabel the subscription end event label
  * @returns
  */
-export function getExchanges(name: string) {
-  return [invokeExchange(name), subscriptionExchange(name)]
+export function getExchanges(name: string, subEndEventLabel?: string) {
+  return [invokeExchange(name), subscriptionExchange(name, subEndEventLabel)]
 }
