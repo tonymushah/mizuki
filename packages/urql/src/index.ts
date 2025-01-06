@@ -208,7 +208,7 @@ export function subscriptionExchange(
               sub_id: subId
             })
           )
-          //.then(() => sink.complete())
+          // .then(() => sink.complete())
           .catch(err => console.error(err))
         return {
           unsubscribe: unlisten
