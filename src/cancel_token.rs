@@ -45,6 +45,7 @@ where
       runtime: PhantomData::<R>,
     }
   }
+  #[allow(dead_code)]
   pub fn listener(&self) -> &L {
     &self.listener
   }
