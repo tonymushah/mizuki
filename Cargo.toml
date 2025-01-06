@@ -51,3 +51,4 @@ serde = { version = "1" }
 serde_json = "1"
 tauri = "2"
 async-graphql = "7"
+tauri-build = "2"
