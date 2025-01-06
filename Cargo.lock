@@ -3952,6 +3952,8 @@ dependencies = [
 name = "svelte-apollo-app"
 version = "0.1.0"
 dependencies = [
+ "async-graphql",
+ "mizuki",
  "serde",
  "serde_json",
  "tauri",
