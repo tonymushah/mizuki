@@ -2406,6 +2406,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tokio",
 ]
 
 [[package]]

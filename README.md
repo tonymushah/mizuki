@@ -26,7 +26,7 @@ and create a toolkit for building GraphQL Tauri Plugins.
 
 ```toml
 [dependencies]
-mizuki = "0.2.0"
+mizuki = "1.0.0"
 ```
 
 ### JavaScript
@@ -36,9 +36,18 @@ If you need adapters for other GraphQL clients, open a PR!
 
 | Package                       | Version (click for changelogs) |
 |-------------------------------|--------------------------------|
-| [`mizuki-urql-adapter`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-url]
+| [`mizuki-urql-adapter`] | [![urql adapter version][urql-adapter-version-badge]][urql-adapter-url] |
+| [`mizuki-apollo-link`] | [![apollo link version][apollo-link-version-badge]] |
 
 ## Usage
+
+With the introduction of [plugin command permissions][tauri-plugin-permission] in Tauri v2, you need your Mizuki plugin into a separate library crate. If you already have, then congrats!
+
+First, add those dependencies to the plugin `Cargo.toml`:
+
+```toml 
+
+```
 
 You need to register the plugin giving it a [`async_graphql::Schema`]. This schema will be used to fulfill requests.
 
@@ -109,3 +118,6 @@ PRs are welcome!
 [`urql`]: https://formidable.com/open-source/urql/
 [`async_graphql::Schema`]: https://docs.rs/async-graphql/latest/async_graphql/struct.Schema.html
 [initial-repo]: https://github.com/JonasKruckenberg/tauri-plugin-graphql
+[`mizuki-apollo-link`]: packages/apollo
+[apollo-link-version-badge]: https://img.shields.io/npm/v/mizuki-apollo-link?label=%20
+[tauri-plugin-permission]: https://tauri.app/develop/plugins/#command-permissions

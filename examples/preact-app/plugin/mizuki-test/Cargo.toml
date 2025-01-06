@@ -13,4 +13,4 @@ serde = { workspace = true, features = ["derive"] }
 tauri = { workspace = true, features = [] }
 mizuki = { path = "../../../.." }
 async-graphql.workspace = true
-
+tokio = "1"
