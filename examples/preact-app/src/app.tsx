@@ -1,79 +1,10 @@
-import { useQuery, useSubscription } from "@urql/preact";
-
-import { graphql } from "./gql";
-
-const testQuery = graphql(`
-query getHero {
-  hero {
-    name
-  }
-}
-`);
-
-function TestQuery() {
-  const [res] = useQuery({
-    query: testQuery,
-  });
-
-  const { data, fetching, error } = res;
-
-  if (fetching) return <p>Loading...</p>;
-  if (error) return <p>Oh no... {error.message}</p>;
-
-  return (
-    <p>The hero is {data?.hero.name ?? "not here"}</p>
-  );
-}
-const testQueryErro = graphql(`
-  query notHero {
-    notHero {
-      name
-    }
-  }
-`);
-
-function TestQueryQueryError(){
-  const [res] = useQuery({
-    query: testQueryErro,
-  });
-
-  const { data, fetching, error } = res;
-
-  if (fetching) return <p>Loading...</p>;
-  if (error) return <p>Oh no... {error.graphQLErrors[0].message}</p>;
-
-  return (
-    <p>The hero is {data?.notHero.name ?? "not here"}</p>
-  );
-}
-
-const newMessages = graphql(`
-  subscription MessageSub {
-    helloWorld
-  }
-`);
-
-function handleSubscription(messages = [], response) {
-  return [...messages, response.helloWorld];
-};
-
-function TestSubscription() {
-  const [res] = useSubscription({ query: newMessages }, handleSubscription);
-  if (!res.data) {
-    return <p>No new messages</p>;
-  }
-
-  return (
-    <p>
-      {res.data}
-    </p>
-  );
-}
-
+import TestQuery from "./components/TestQuery";
+import TestQueryQueryError from "./components/TestQueryQueryError";
+import TestSubscription from "./components/TestSubscription";
 export function App() {
   return <>
     <TestQuery />
-    <TestQueryQueryError/>
+    <TestQueryQueryError />
     <TestSubscription />
   </>
 }

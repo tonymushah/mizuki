@@ -21,6 +21,16 @@ export type Human = {
   name: Scalars['String']['output'];
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  sendMessage: Scalars['Boolean']['output'];
+};
+
+
+export type MutationSendMessageArgs = {
+  message: Scalars['String']['input'];
+};
+
 export type Query = {
   __typename?: 'Query';
   hero: Human;
@@ -30,6 +40,7 @@ export type Query = {
 export type Subscription = {
   __typename?: 'Subscription';
   helloWorld: Scalars['String']['output'];
+  watchMessages: Scalars['String']['output'];
 };
 
 export type GetHeroQueryVariables = Exact<{ [key: string]: never; }>;

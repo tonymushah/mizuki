@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@mizuki/urql": "link:../../packages/urql",
+    "@preact/signals": "^2.0.0",
     "@tauri-apps/api": "2",
     "@urql/preact": "4",
     "preact": "10"
