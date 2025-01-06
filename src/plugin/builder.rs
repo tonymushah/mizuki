@@ -8,6 +8,17 @@ use super::{
   OnWebviewReady, OnWindowReady, SetupHook,
 };
 
+/// Errors that can happen during [`Builder`].
+#[derive(Debug, Clone, Hash, PartialEq, thiserror::Error)]
+#[non_exhaustive]
+pub enum BuilderError {
+  /// Plugin attempted to use a reserved name.
+  #[error("plugin uses reserved name: {0}")]
+  ReservedName(String),
+}
+
+const RESERVED_PLUGIN_NAMES: &[&str] = &["core", "tauri"];
+
 ///
 /// This [`self::Builder`] struct share the same build function as [`tauri::plugin::Builder`]
 ///
@@ -185,8 +196,19 @@ where
     self
   }
   /// Build the [`crate::MizukiPlugin`]
-  pub fn build(self) -> MizukiPlugin<R, Q, M, S> {
-    MizukiPlugin {
+  ///
+  /// It returns an error if your plugin name is reserved.
+  ///
+  /// ## List of reserved names
+  ///
+  /// - core
+  /// - tauri
+  ///
+  pub fn try_build(self) -> Result<MizukiPlugin<R, Q, M, S>, BuilderError> {
+    if let Some(&reserved) = RESERVED_PLUGIN_NAMES.iter().find(|&r| r == &self.name) {
+      return Err(BuilderError::ReservedName(reserved.into()));
+    }
+    Ok(MizukiPlugin {
       name: self.name,
       app: None,
       schema: self.schema,
@@ -202,6 +224,15 @@ where
       on_window_ready: self.on_window_ready,
       auto_cancel: self.auto_cancel,
       sub_end_event_label: self.sub_event_label,
-    }
+    })
+  }
+  /// Build the [`crate::MizukiPlugin`]
+  ///
+  /// # Panics
+  ///
+  /// If the builder returns an error during [`Self::try_build`], then this method will panic.
+  ///
+  pub fn build(self) -> MizukiPlugin<R, Q, M, S> {
+    self.try_build().unwrap()
   }
 }

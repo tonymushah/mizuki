@@ -1,6 +1,6 @@
 use crate::{cancel_token::CancellationTokenListener, subscription::SubscriptionRequest};
 mod builder;
-pub use builder::Builder;
+pub use builder::{Builder, BuilderError};
 
 use async_graphql::{
   futures_util::StreamExt, BatchRequest, ObjectType, Request, Schema, SubscriptionType,

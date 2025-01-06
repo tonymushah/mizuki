@@ -2139,6 +2139,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "thiserror 2.0.9",
  "tokio",
  "tokio-util",
 ]

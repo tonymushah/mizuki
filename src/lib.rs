@@ -210,8 +210,8 @@
 //! [`Commands`]: https://tauri.studio/docs/guides/command
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
-pub(crate) mod subscription;
-pub(crate) mod plugin;
 pub(crate) mod cancel_token;
+pub(crate) mod plugin;
+pub(crate) mod subscription;
 
-pub use plugin::{Builder, MizukiPlugin};
+pub use plugin::{Builder, BuilderError, MizukiPlugin};
