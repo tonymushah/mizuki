@@ -44,7 +44,8 @@ fast_chemail = ["async-graphql/fast_chemail"]
 rand = "0.8.5"
 
 [workspace]
-members = ["examples/*/src-tauri"]
+members = [ "crates/*","examples/*/src-tauri", "examples/preact-app/plugin/mizuki-test", "examples/svelte-apollo-app/plugin/mizuki-test"]
+
 
 [workspace.dependencies]
 serde = { version = "1" }
@@ -52,3 +53,6 @@ serde_json = "1"
 tauri = "2"
 async-graphql = "7"
 tauri-build = "2"
+tauri-plugin = "2"
+mizuki = {path = "./"}
+mizuki-build = {path = "./crates/mizuki-build"}

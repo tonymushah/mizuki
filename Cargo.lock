@@ -95,8 +95,7 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 name = "app"
 version = "0.1.0"
 dependencies = [
- "async-graphql",
- "mizuki",
+ "mizuki-test",
  "serde",
  "serde_json",
  "tauri",
@@ -2389,6 +2388,29 @@ dependencies = [
  "tokio",
  "tokio-util",
 ]
+
+[[package]]
+name = "mizuki-build"
+version = "1.0.0"
+dependencies = [
+ "tauri-plugin",
+]
+
+[[package]]
+name = "mizuki-test"
+version = "0.1.0"
+dependencies = [
+ "async-graphql",
+ "mizuki",
+ "mizuki-build",
+ "serde",
+ "serde_json",
+ "tauri",
+]
+
+[[package]]
+name = "mizuki-test-apollo-app"
+version = "0.1.0"
 
 [[package]]
 name = "muda"

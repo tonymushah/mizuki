@@ -17,8 +17,7 @@ tauri-build = { workspace = true, features = [] }
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tauri = { workspace = true, features = [] }
-mizuki = { path = "../../.." }
-async-graphql.workspace = true
+mizuki-test = {path = "../plugin/mizuki-test"}
 
 [features]
 # by default Tauri runs in production mode
