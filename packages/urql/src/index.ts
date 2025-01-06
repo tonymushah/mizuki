@@ -56,10 +56,11 @@ export const invokeExchange: (name: string) => Exchange =
 
           const args = {
             query: print(operation.query),
-            variables: operation.variables || undefined
+            variables: operation.variables || undefined,
+            extensions: operation.extensions
           }
 
-          const command = `plugin:${name}|${operation.context.url}`
+          const command = `plugin:${name}|graphql`
 
           console.debug({
             type: 'invokeRequest',
