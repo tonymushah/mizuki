@@ -1,25 +1,30 @@
-use crate::subscription::SubscriptionRequest;
+use crate::{cancel_token::CancellationTokenListener, subscription::SubscriptionRequest};
 mod builder;
 pub use builder::Builder;
 
 use async_graphql::{
   futures_util::StreamExt, BatchRequest, ObjectType, Request, Schema, SubscriptionType,
 };
+use serde::{de::IntoDeserializer, Deserialize};
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
 use tauri::{
-  plugin::{Plugin, Result},
-  AppHandle, Invoke, InvokeError, Manager, PageLoadPayload, RunEvent, Runtime, Window,
+  ipc::{Invoke, InvokeError},
+  plugin::Plugin,
+  webview::PageLoadPayload,
+  AppHandle, Emitter, Manager, RunEvent, Runtime, Url, Webview, Window, WindowEvent,
 };
 
-pub(crate) type SetupHook<R, Q, M, S> =
-  dyn FnOnce(&AppHandle<R>, JsonValue, &Schema<Q, M, S>) -> Result<()> + Send;
-pub(crate) type OnWebviewReady<R> = dyn FnMut(Window<R>) + Send;
+pub(crate) type SetupHook<R, Q, M, S> = dyn FnOnce(&AppHandle<R>, JsonValue, &Schema<Q, M, S>) -> Result<(), Box<dyn std::error::Error>>
+  + Send;
+pub(crate) type OnWebviewReady<R> = dyn FnMut(Webview<R>) + Send;
 pub(crate) type OnEvent<R> = dyn FnMut(&AppHandle<R>, &RunEvent) + Send;
-pub(crate) type OnPageLoad<R> = dyn FnMut(Window<R>, PageLoadPayload) + Send;
+pub(crate) type OnPageLoad<R> = dyn FnMut(&Webview<R>, &PageLoadPayload<'_>) + Send;
 pub(crate) type OnDrop<R> = dyn FnOnce(AppHandle<R>) + Send;
 pub(crate) type OnBatchRequest = dyn Fn(BatchRequest) -> BatchRequest + Send + Sync;
 pub(crate) type OnSubRequst = dyn Fn(Request) -> Request + Send + Sync;
+pub(crate) type OnWindowReady<R> = dyn FnMut(Window<R>) + Send;
+pub(crate) type OnNavigation<R> = dyn Fn(&Webview<R>, &Url) -> bool + Send;
 
 pub struct MizukiPlugin<R, Q, M, S>
 where
@@ -39,6 +44,10 @@ where
   on_drop: Option<Box<OnDrop<R>>>,
   on_batch_request: Arc<Box<OnBatchRequest>>,
   on_sub_request: Arc<Box<OnSubRequst>>,
+  on_window_ready: Box<OnWindowReady<R>>,
+  on_navigation: Box<OnNavigation<R>>,
+  auto_cancel: bool,
+  sub_end_event_label: String,
 }
 
 impl<R, Q, M, S> Drop for MizukiPlugin<R, Q, M, S>
@@ -66,7 +75,11 @@ where
     self.name
   }
 
-  fn initialize(&mut self, app: &AppHandle<R>, config: JsonValue) -> Result<()> {
+  fn initialize(
+    &mut self,
+    app: &AppHandle<R>,
+    config: JsonValue,
+  ) -> Result<(), Box<dyn std::error::Error>> {
     let _ = config;
     self.app.replace(app.clone());
     if let Some(s) = self.setup.take() {
@@ -79,11 +92,7 @@ where
     self.js_init_script.clone()
   }
 
-  fn created(&mut self, window: Window<R>) {
-    (self.on_webview_ready)(window)
-  }
-
-  fn on_page_load(&mut self, window: Window<R>, payload: PageLoadPayload) {
+  fn on_page_load(&mut self, window: &Webview<R>, payload: &PageLoadPayload<'_>) {
     (self.on_page_load)(window, payload)
   }
 
@@ -91,43 +100,101 @@ where
     (self.on_event)(app, event)
   }
 
-  fn extend_api(&mut self, invoke: Invoke<R>) {
+  fn extend_api(&mut self, invoke: Invoke<R>) -> bool {
     let on_batch_request = self.on_batch_request.clone();
     let on_sub_request = self.on_sub_request.clone();
-    let window = invoke.message.window();
+    let sub_end_event_label = self.sub_end_event_label.clone();
+    let auto_cancel = self.auto_cancel;
 
     let schema = self.schema.clone();
 
     match invoke.message.command() {
       "graphql" => invoke.resolver.respond_async(async move {
-        let req: BatchRequest = serde_json::from_value(invoke.message.payload().clone())
-          .map_err(InvokeError::from_serde_json)?;
+        let req: BatchRequest = match invoke.message.payload() {
+          tauri::ipc::InvokeBody::Json(value) => {
+            serde_json::from_value(value.clone()).map_err(InvokeError::from_error)?
+          }
+          tauri::ipc::InvokeBody::Raw(vec) => {
+            Deserialize::deserialize(vec.clone().into_deserializer())
+              .map_err(|e: serde_json::Error| InvokeError::from_error(e))?
+          }
+        };
 
         let resp = schema
           .execute_batch((on_batch_request)(
-            req.data(window.app_handle()).data(window),
+            req
+              .data(invoke.message.webview().app_handle().clone())
+              .data(invoke.message.webview())
+              .data(invoke.message.webview().window()),
           ))
           .await;
 
-        let str = serde_json::to_string(&resp).map_err(InvokeError::from_serde_json)?;
+        let str = serde_json::to_string(&resp).map_err(InvokeError::from_error)?;
 
         Ok((str, resp.is_ok()))
       }),
       "subscriptions" => invoke.resolver.respond_async(async move {
-        let req: SubscriptionRequest = serde_json::from_value(invoke.message.payload().clone())
-          .map_err(InvokeError::from_serde_json)?;
+        let window = invoke.message.webview();
+        let req: SubscriptionRequest = match invoke.message.payload() {
+          tauri::ipc::InvokeBody::Json(value) => {
+            serde_json::from_value(value.clone()).map_err(InvokeError::from_error)?
+          }
+          tauri::ipc::InvokeBody::Raw(vec) => {
+            Deserialize::deserialize(vec.clone().into_deserializer())
+              .map_err(|e: serde_json::Error| InvokeError::from_error(e))?
+          }
+        };
 
         let subscription_window = window.clone();
+        let webwiew_cancel_token = CancellationTokenListener::new(
+          subscription_window.clone(),
+          sub_end_event_label,
+          req.sub_id.clone(),
+        );
+        let cancel_token = webwiew_cancel_token.token();
         let mut stream = schema.execute_stream((on_sub_request)(
-          req.inner.data(window.app_handle()).data(window),
+          req
+            .inner
+            .data(invoke.message.webview().app_handle().clone())
+            .data(invoke.message.webview())
+            .data(invoke.message.webview().window())
+            .data(webwiew_cancel_token.token().clone()),
         ));
 
-        let event_id = &format!("graphql://{}", req.id);
-        while let Some(result) = stream.next().await {
-          let str = serde_json::to_string(&result).map_err(InvokeError::from_serde_json)?;
-
-          subscription_window.emit(event_id, str)?;
+        {
+          let cancel_token = cancel_token.clone();
+          subscription_window.window().on_window_event(move |event| {
+            if let WindowEvent::Destroyed = event {
+              cancel_token.cancel();
+            }
+          });
         }
+
+        let event_id = &format!("graphql://{}", req.id);
+        if auto_cancel {
+          loop {
+            tokio::select! {
+              _ = cancel_token.cancelled() => {
+                break;
+              },
+              Some(result) = stream.next() => {
+                let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
+
+                subscription_window.emit(event_id, str)?;
+              },
+              else => {
+                break;
+              }
+            }
+          }
+        } else {
+          while let Some(result) = stream.next().await {
+            let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
+
+            subscription_window.emit(event_id, str)?;
+          }
+        }
+
         subscription_window.emit(event_id, Option::<()>::None)?;
 
         Ok(())
@@ -137,5 +204,18 @@ where
         cmd
       )),
     }
+    true
+  }
+
+  fn window_created(&mut self, window: Window<R>) {
+    (self.on_window_ready)(window)
+  }
+
+  fn webview_created(&mut self, webview: tauri::Webview<R>) {
+    (self.on_webview_ready)(webview)
+  }
+
+  fn on_navigation(&mut self, webview: &tauri::Webview<R>, url: &tauri::Url) -> bool {
+    (self.on_navigation)(webview, url)
   }
 }

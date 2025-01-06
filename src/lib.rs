@@ -212,5 +212,6 @@
 //! [`GraphQL`]: https://graphql.org
 pub(crate) mod subscription;
 pub(crate) mod plugin;
+pub(crate) mod cancel_token;
 
 pub use plugin::{Builder, MizukiPlugin};

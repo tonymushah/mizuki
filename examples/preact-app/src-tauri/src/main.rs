@@ -3,10 +3,15 @@
   windows_subsystem = "windows"
 )]
 
-use std::{fs::File, io::{BufWriter, Write}, path::Path};
+use std::{
+  fs::File,
+  io::{BufWriter, Write},
+  path::Path,
+};
 
 use async_graphql::{
-  futures_util::{self, stream::Stream}, EmptyMutation, Error, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription
+  futures_util::{self, stream::Stream},
+  EmptyMutation, Error, Object, Result as GraphQLResult, Schema, SimpleObject, Subscription,
 };
 use mizuki::MizukiPlugin;
 use tauri::Runtime;
@@ -40,7 +45,11 @@ impl Subscription {
 }
 
 fn new_mizuki_test<R: Runtime>() -> MizukiPlugin<R, Query, EmptyMutation, Subscription> {
-  mizuki::Builder::new("mizuki-test", Schema::new(Query, EmptyMutation, Subscription)).setup(|_app, _config, s| {
+  mizuki::Builder::new(
+    "mizuki-test",
+    Schema::new(Query, EmptyMutation, Subscription),
+  )
+  .setup(|_app, _config, s| {
     #[cfg(debug_assertions)]
     {
       let sdl = s.sdl();
@@ -50,11 +59,11 @@ fn new_mizuki_test<R: Runtime>() -> MizukiPlugin<R, Query, EmptyMutation, Subscr
       buf_write.flush()?;
     }
     Ok(())
-  }).build()
+  })
+  .build()
 }
 
 fn main() {
-  
   tauri::Builder::default()
     .plugin(new_mizuki_test())
     .run(tauri::generate_context!())

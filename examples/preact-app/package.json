@@ -21,11 +21,11 @@
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",
     "@graphql-typed-document-node/core": "^3.2.0",
-    "@preact/preset-vite": "2.7",
+    "@preact/preset-vite": "2.9",
     "@tauri-apps/cli": "2",
     "graphql": "^16.6.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2",
-    "vite": "5"
+    "vite": "6"
   }
 }

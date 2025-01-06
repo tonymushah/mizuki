@@ -1,47 +1,49 @@
 [package]
 name = "mizuki"
 version = "1.0.0"
-authors = [ "Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>" ]
+authors = ["Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>"]
 description = "A toolkit for building Tauri Plugins that enables type-safe IPC through GraphQL."
 edition = "2021"
-rust-version = "1.59"
-exclude = [ "/webview-dist", "/webview-src", "node_modules" ]
+rust-version = "1.77.2"
+exclude = ["/webview-dist", "/webview-src", "node_modules"]
 license = "MIT"
 repository = "https://github.com/tonymushah/mizuki"
-categories = [ "gui", "web-programming" ]
-keywords = [ "tauri-plugin", "graphql" ]
+categories = ["gui", "web-programming"]
+keywords = ["tauri-plugin", "graphql"]
 
 [dependencies]
-serde = { workspace = true, features = [ "derive" ] }
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tauri.workspace = true
 async-graphql.workspace = true
+tokio-util = "0"
+tokio = { version = "1", features = ["macros"] }
 
 [features]
-log = [ "async-graphql/log" ]
-opentelemetry = [ "async-graphql/opentelemetry" ]
-bson = [ "async-graphql/bson" ]
-chrono = [ "async-graphql/chrono" ]
-chrono-tz = [ "async-graphql/chrono-tz" ]
-url = [ "async-graphql/url" ]
-uuid = [ "async-graphql/uuid" ]
-string_number = [ "async-graphql/string_number" ]
-dataloader = [ "async-graphql/dataloader" ]
-secrecy = [ "async-graphql/secrecy" ]
-decimal = [ "async-graphql/decimal" ]
-bigdecimal = [ "async-graphql/bigdecimal" ]
-cbor = [ "async-graphql/cbor" ]
-smol_str = [ "async-graphql/smol_str" ]
-hashbrown = [ "async-graphql/hashbrown" ]
-time = [ "async-graphql/time" ]
-tokio-sync = [ "async-graphql/tokio-sync" ]
-fast_chemail = [ "async-graphql/fast_chemail" ]
+log = ["async-graphql/log"]
+opentelemetry = ["async-graphql/opentelemetry"]
+bson = ["async-graphql/bson"]
+chrono = ["async-graphql/chrono"]
+chrono-tz = ["async-graphql/chrono-tz"]
+url = ["async-graphql/url"]
+uuid = ["async-graphql/uuid"]
+string_number = ["async-graphql/string_number"]
+dataloader = ["async-graphql/dataloader"]
+secrecy = ["async-graphql/secrecy"]
+decimal = ["async-graphql/decimal"]
+bigdecimal = ["async-graphql/bigdecimal"]
+cbor = ["async-graphql/cbor"]
+smol_str = ["async-graphql/smol_str"]
+hashbrown = ["async-graphql/hashbrown"]
+time = ["async-graphql/time"]
+tokio-sync = ["async-graphql/tokio-sync"]
+fast_chemail = ["async-graphql/fast_chemail"]
 
 [dev-dependencies]
 rand = "0.8.5"
 
 [workspace]
-members = [ "examples/*/src-tauri" ]
+members = ["examples/*/src-tauri"]
 
 [workspace.dependencies]
 serde = { version = "1" }
