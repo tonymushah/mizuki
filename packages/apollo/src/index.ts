@@ -9,6 +9,7 @@ import {print} from 'graphql'
 import {invoke} from '@tauri-apps/api/core'
 import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
 import {Event} from '@tauri-apps/api/event'
+import {getMainDefinition} from '@apollo/client/utilities'
 
 type Response = [body: string, isOk: boolean]
 
@@ -106,5 +107,34 @@ export class SubscriptionsLink extends ApolloLink {
         unlistens.forEach(u => u())
       }
     })
+  }
+}
+
+export class MizukiLink extends ApolloLink {
+  private pluginName: string
+  private subEndEventLabel: string
+
+  constructor(pluginName: string, subEndEventLabel: string = 'sub_end') {
+    super()
+    this.pluginName = pluginName
+    this.subEndEventLabel = subEndEventLabel
+  }
+
+  request(
+    operation: Operation,
+    forward?: NextLink | undefined
+  ): Observable<FetchResult> | null {
+    return this.split(
+      ({query}) => {
+        const definition = getMainDefinition(query)
+
+        return (
+          definition.kind === 'OperationDefinition' &&
+          definition.operation === 'subscription'
+        )
+      },
+      new SubscriptionsLink(this.pluginName, this.subEndEventLabel),
+      new InvokeLink(this.pluginName)
+    ).request(operation, forward)
   }
 }
