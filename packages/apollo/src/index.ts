@@ -3,9 +3,10 @@ import {
   FetchResult,
   NextLink,
   Observable,
-  Operation
-} from '@apollo/client'
-import {print} from 'graphql'
+  Operation,
+  fromPromise
+} from '@apollo/client/core'
+import {GraphQLError, print} from 'graphql'
 import {invoke} from '@tauri-apps/api/core'
 import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
 import {Event} from '@tauri-apps/api/event'
@@ -25,37 +26,27 @@ export class InvokeLink extends ApolloLink {
     operation: Operation,
     forward?: NextLink | undefined
   ): Observable<FetchResult> | null {
-    return new Observable(observer => {
-      const command = `plugin:${this.pluginName}|graphql`
-      const args = {
-        query: print(operation.query),
-        variables: operation.variables || undefined,
-        extensions: operation.extensions
-      }
-      let ended = false
-      Promise.resolve()
-        .then(() => {
-          if (ended) return
-          return invoke<Response>(command, args)
-        })
+    const command = `plugin:${this.pluginName}|graphql`
+    const args = {
+      query: print(operation.query),
+      variables: operation.variables || undefined,
+      extensions: operation.extensions
+    }
+    return fromPromise(
+      invoke<Response>(command, args)
         .then(response => {
+          console.debug(response)
           const [body] = response!
           const payload: FetchResult = JSON.parse(body)
-
-          console.debug(response)
-
-          observer.next(payload)
+          return payload
         })
-        .then(observer.complete)
         .catch(err => {
-          observer.error(err)
-          observer.complete()
+          return {
+            errors: [new GraphQLError(String(err))],
+            context: operation.getContext()
+          }
         })
-
-      return () => {
-        ended = true
-      }
-    })
+    )
   }
 }
 
@@ -108,27 +99,20 @@ export class SubscriptionsLink extends ApolloLink {
             sub_id: subId
           })
         )
-        .catch(err => console.error(err))
+        .catch(err => {
+          subscriber.error(err)
+        })
       return unlisten
     })
   }
 }
 
 export class MizukiLink extends ApolloLink {
-  private pluginName: string
-  private subEndEventLabel: string
+  private inner: ApolloLink
 
   constructor(pluginName: string, subEndEventLabel: string = 'sub_end') {
     super()
-    this.pluginName = pluginName
-    this.subEndEventLabel = subEndEventLabel
-  }
-
-  request(
-    operation: Operation,
-    forward?: NextLink | undefined
-  ): Observable<FetchResult> | null {
-    return this.split(
+    this.inner = ApolloLink.split(
       ({query}) => {
         const definition = getMainDefinition(query)
 
@@ -137,8 +121,15 @@ export class MizukiLink extends ApolloLink {
           definition.operation === 'subscription'
         )
       },
-      new SubscriptionsLink(this.pluginName, this.subEndEventLabel),
-      new InvokeLink(this.pluginName)
-    ).request(operation, forward)
+      new SubscriptionsLink(pluginName, subEndEventLabel),
+      new InvokeLink(pluginName)
+    )
+  }
+
+  request(
+    operation: Operation,
+    forward?: NextLink | undefined
+  ): Observable<FetchResult> | null {
+    return this.inner.request(operation, forward)
   }
 }

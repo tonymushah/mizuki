@@ -22,7 +22,7 @@ impl Query {
 
 pub fn init<R: Runtime>() -> MizukiPlugin<R, Query, EmptyMutation, EmptySubscription> {
   Builder::new(
-    "mizuki-test",
+    "mizuki-test-apollo",
     Schema::new(Query, EmptyMutation, EmptySubscription),
   )
   .setup(|_app, _, schema| {

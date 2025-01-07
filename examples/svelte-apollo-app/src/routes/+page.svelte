@@ -1,13 +1,27 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
+  import { graphql } from "$lib/gql"
+  import client from "$lib/gql.client"
+  // import { invoke } from "@tauri-apps/api/core";
 
   let name = $state("");
   let greetMsg = $state("");
+  const query = graphql(`
+    query say($name: String) {
+      say(name: $name)
+    }
+  `);
 
   async function greet(event: Event) {
     event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+    const res = await client.query({
+      query,
+      variables: {
+        name
+      }
+    }).catch((e) => {console.error(e);
+      throw e;
+    } );
+    greetMsg = res.data.say;
   }
 </script>
 
