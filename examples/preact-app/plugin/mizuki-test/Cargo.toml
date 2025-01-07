@@ -5,13 +5,13 @@ edition = "2021"
 links = "mizuki-test"
 
 [build-dependencies]
-mizuki-build = {workspace = true}
+mizuki-build = { workspace = true }
 
 [dependencies]
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tauri = { workspace = true, features = [] }
-mizuki = { path = "../../../.." }
+mizuki = { workspace = true }
 async-graphql.workspace = true
 tokio = "1"
 tokio-util = "0.7"

@@ -21,6 +21,7 @@ tauri-build = { workspace = true, features = [] }
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tauri = { workspace = true, features = [] }
-mizuki = { path = "../../.." }
+mizuki = { workspace = true }
 async-graphql.workspace = true
 tauri-plugin-opener = "2"
+mizuki-test-apollo = {path = "../plugin/mizuki-test"}

@@ -2411,8 +2411,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "mizuki-test-apollo-app"
+name = "mizuki-test-apollo"
 version = "0.1.0"
+dependencies = [
+ "async-graphql",
+ "mizuki",
+ "mizuki-build",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tokio",
+ "tokio-util",
+]
 
 [[package]]
 name = "muda"
@@ -3978,6 +3988,7 @@ version = "0.1.0"
 dependencies = [
  "async-graphql",
  "mizuki",
+ "mizuki-test-apollo",
  "serde",
  "serde_json",
  "tauri",
