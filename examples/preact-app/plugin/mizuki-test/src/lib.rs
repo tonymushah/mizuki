@@ -1,6 +1,5 @@
 use std::{
   fs::File,
-  future::Future,
   io::{BufWriter, Write},
   path::Path,
   task::{ready, Poll},
@@ -12,7 +11,8 @@ use async_graphql::{
 };
 use mizuki::{AsyncGQLContextExt, MizukiPlugin};
 use tauri::{Emitter, EventId, Listener, Runtime, Webview};
-use tokio::sync::watch::{channel, Receiver};
+use tokio::sync::watch::{self, channel, Receiver};
+use tokio_util::sync::ReusableBoxFuture;
 
 #[derive(SimpleObject, Debug, Clone)]
 struct Human {
@@ -54,13 +54,31 @@ impl Mutation {
 
 pub struct Subscription;
 
+type EventListenerInnerFut = ReusableBoxFuture<
+  'static,
+  (
+    Result<(), watch::error::RecvError>,
+    Receiver<Option<String>>,
+  ),
+>;
+
 struct EventListener<R>
 where
   R: Runtime,
 {
   webview: Webview<R>,
   event_id: EventId,
-  receiver: Receiver<Option<String>>,
+  fut: EventListenerInnerFut,
+}
+
+async fn make_future(
+  mut rx: Receiver<Option<String>>,
+) -> (
+  Result<(), watch::error::RecvError>,
+  Receiver<Option<String>>,
+) {
+  let res = rx.wait_for(|e| e.is_some()).await.map(|_| ());
+  (res, rx)
 }
 
 impl<R: Runtime> Drop for EventListener<R> {
@@ -78,7 +96,13 @@ impl<R: Runtime> EventListener<R> {
       event_id: webview.listen(event_label, move |e| {
         let _ = tx.send(Some(e.payload().into()));
       }),
-      receiver: rx,
+      fut: ReusableBoxFuture::new(async move {
+        if rx.borrow().is_some() {
+          (Ok(()), rx)
+        } else {
+          make_future(rx).await
+        }
+      }),
       webview,
     }
   }
@@ -90,18 +114,23 @@ impl<R: Runtime> Stream for EventListener<R> {
     mut self: std::pin::Pin<&mut Self>,
     cx: &mut std::task::Context<'_>,
   ) -> Poll<Option<Self::Item>> {
-    let mut d = Box::pin(self.receiver.changed());
-    match ready!(d.as_mut().poll(cx)) {
+    let (result, mut rx) = ready!(self.fut.poll(cx));
+    match result {
       Ok(_) => {
-        drop(d);
-        if let Some(e) = self.receiver.borrow().as_ref() {
-          Poll::Ready(Some(e.clone()))
-        } else {
-          cx.waker().wake_by_ref();
-          Poll::Pending
-        }
+        let received = (*rx.borrow_and_update()).clone();
+        self.fut.set(make_future(rx));
+        Poll::Ready(received.map(|e| {
+          if let Ok(strg) = serde_json::from_str::<String>(&e) {
+            strg
+          } else {
+            e
+          }
+        }))
       }
-      Err(_) => Poll::Ready(None),
+      Err(_) => {
+        self.fut.set(make_future(rx));
+        Poll::Ready(None)
+      }
     }
   }
 }

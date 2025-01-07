@@ -2407,6 +2407,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]

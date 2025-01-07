@@ -14,3 +14,4 @@ tauri = { workspace = true, features = [] }
 mizuki = { path = "../../../.." }
 async-graphql.workspace = true
 tokio = "1"
+tokio-util = "0.7"

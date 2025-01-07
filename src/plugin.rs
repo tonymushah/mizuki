@@ -175,14 +175,21 @@ where
           loop {
             tokio::select! {
               _ = cancel_token.cancelled() => {
+                // println!("end cancelled");
                 break;
               },
-              Some(result) = stream.next() => {
-                let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
+              res = stream.next() => {
+                if let Some(result) = res {
+                  let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
 
-                subscription_window.emit(event_id, str)?;
+                  subscription_window.emit(event_id, str)?;
+                }else {
+                  // println!("end stream");
+                  break;
+                }
               },
               else => {
+                // println!("end!");
                 break;
               }
             }

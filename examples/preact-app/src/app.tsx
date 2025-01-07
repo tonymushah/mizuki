@@ -1,3 +1,4 @@
+import TestMutationSubs from "./components/TestMutationSubs";
 import TestQuery from "./components/TestQuery";
 import TestQueryQueryError from "./components/TestQueryQueryError";
 import TestSubscription from "./components/TestSubscription";
@@ -6,5 +7,6 @@ export function App() {
     <TestQuery />
     <TestQueryQueryError />
     <TestSubscription />
+    <TestMutationSubs />
   </>
 }

@@ -33,10 +33,13 @@ where
   pub fn new(listener: L, event: String, payload_match: String) -> Self {
     let token = CancellationToken::new();
     let cloned_token = token.clone();
-    let event_id = listener.once(event.clone(), move |e| {
-      println!("{} - {}", event, e.payload());
-      if e.payload() == payload_match {
-        println!("Cancel!");
+    let event_id = listener.listen(event.clone(), move |e| {
+      // println!("{} - {}", event, e.payload());
+      let Ok(payload) = serde_json::from_str::<String>(e.payload()) else {
+        return;
+      };
+      if payload == payload_match {
+        // println!("Cancel!");
         cloned_token.cancel();
       }
     });
