@@ -72,12 +72,33 @@ class SubObs implements Observable<ExecutionResult> {
     error?: unknown,
     complete?: unknown
   ): Unsubscribable {
+    // console.log('start')
+    // console.log(next, error, complete)
     if (
+      typeof next === 'object' &&
+      next !== null &&
+      'next' in next &&
+      typeof next.next === 'function' &&
+      'error' in next &&
+      typeof next.error === 'function' &&
+      'complete' in next &&
+      typeof next.complete === 'function'
+    ) {
+      // console.log('can sub!')
+      this.sub(
+        next.next as SubNext,
+        next.error as SubErr,
+        next.complete as SubCompl
+      )
+    } else if (
       typeof next === 'function' &&
       typeof error === 'function' &&
       typeof complete === 'function'
     ) {
+      // console.log('can sub!')
       this.sub(next as SubNext, error as SubErr, complete as SubCompl)
+    } else {
+      // console.error('cannot sub')
     }
     return {
       unsubscribe: this.unlisten
@@ -92,6 +113,7 @@ export function getSubscriptionFetcher(
   const appWebview = getCurrentWebviewWindow()
   const command = `plugin:${pluginName}|subscriptions`
   const fetcher: Fetcher = async function (params) {
+    // console.log('fetching')
     const id = Math.floor(Math.random() * 10000000)
     const subId = `${Math.floor(Math.random() * 10000000)}`
     let unlistens: (() => void)[] = [
@@ -101,6 +123,7 @@ export function getSubscriptionFetcher(
     ]
 
     const unlisten = () => {
+      // console.log('stoping')
       unlistens.forEach(u => u())
       unlistens = []
     }
@@ -111,6 +134,7 @@ export function getSubscriptionFetcher(
       error: (err: any) => void,
       complete: () => void
     ) {
+      // console.log('sub')
       appWebview
         .listen(`graphql://${id}`, (event: Event<string | null>) => {
           if (event.payload === null) return complete()
@@ -132,6 +156,7 @@ export function getSubscriptionFetcher(
           error(err)
         })
     }
+    // console.log('returned subObs')
     return new SubObs(sub, unlisten)
   }
   return fetcher
@@ -143,7 +168,7 @@ export default function getMuzikiFetcher(
 ): Fetcher {
   const invokeFetcher = getInvokeFetcher(pluginName)
   const subFetcher = getSubscriptionFetcher(pluginName, subEndEventLabel)
-  return async params => {
+  return params => {
     const document = parse(params.query)
     const maybeSub = document.definitions.find(e => {
       if (e.kind === 'OperationDefinition') {

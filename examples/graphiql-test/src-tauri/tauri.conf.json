@@ -12,7 +12,14 @@
   "app": {
     "windows": [
       {
-        "title": "graphiql-test",
+        "label": "main",
+        "title": "graphiql-main",
+        "width": 800,
+        "height": 600
+      },
+      {
+        "label": "sub-main",
+        "title": "graphiql-sub",
         "width": 800,
         "height": 600
       }

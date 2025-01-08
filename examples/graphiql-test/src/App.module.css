@@ -1,0 +1,4 @@
+.graphiqlContainerExt{
+    height: -webkit-fill-available;
+    display: grid;
+}
