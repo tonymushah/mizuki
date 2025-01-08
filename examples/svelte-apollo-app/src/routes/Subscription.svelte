@@ -24,13 +24,16 @@
 
 <div>
   <h4>Subscription</h4>
-  <p class:noMessage={$sub == undefined}>
-    {#if $sub}
-      {$sub}
-    {:else}
-      No Message
-    {/if}
-  </p>
+  {#if listening}
+    <p class:noMessage={$sub == undefined}>
+      {#if $sub}
+        {$sub}
+      {:else}
+        No Message
+      {/if}
+    </p>
+  {/if}
+
   <button
     onclick={() => {
       listening = !listening
@@ -45,9 +48,9 @@
 </div>
 
 <style>
-    h4{
-        margin: 0px;
-    }
+  h4 {
+    margin: 0px;
+  }
   div {
     display: flex;
     flex-direction: column;
