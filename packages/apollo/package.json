@@ -27,7 +27,7 @@
     "@tauri-apps/api": "2"
   },
   "devDependencies": {
-    "graphql": "16.6.0",
+    "graphql": "16",
     "tsup": "8",
     "typescript": "5"
   }

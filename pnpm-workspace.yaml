@@ -1,4 +1,3 @@
 packages:
   - 'packages/*'
   - 'examples/*'
-  - '!packages/graphiql' # the graphiql frontend is experimental right now

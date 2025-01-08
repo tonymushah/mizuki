@@ -1,5 +1,5 @@
 {
-  "name": "mizuki-urql-adapter",
+  "name": "mizuki-graphiql-fetcher",
   "version": "1.0.0",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",
@@ -23,12 +23,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
+    "@graphiql/toolkit": "^0.11.1",
     "@tauri-apps/api": "2",
-    "@urql/core": "5",
-    "wonka": "6"
+    "graphql": "16"
   },
   "devDependencies": {
-    "graphql": "16",
     "tsup": "8",
     "typescript": "5"
   }

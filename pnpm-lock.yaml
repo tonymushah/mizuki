@@ -159,20 +159,39 @@ importers:
     dependencies:
       '@apollo/client':
         specifier: ^3.12.4
-        version: 3.12.4(graphql-ws@5.14.2(graphql@16.6.0))(graphql@16.6.0)
+        version: 3.12.4(graphql-ws@5.14.2(graphql@16.10.0))(graphql@16.10.0)
       '@tauri-apps/api':
         specifier: '2'
         version: 2.1.1
     devDependencies:
       graphql:
-        specifier: 16.6.0
-        version: 16.6.0
+        specifier: '16'
+        version: 16.10.0
       tsup:
         specifier: '8'
         version: 8.3.5(jiti@1.21.0)(postcss@8.4.49)(typescript@5.3.2)
       typescript:
         specifier: '5'
         version: 5.3.2
+
+  packages/graphiql:
+    dependencies:
+      '@graphiql/toolkit':
+        specifier: ^0.11.1
+        version: 0.11.1(@types/node@20.10.4)(graphql-ws@5.14.2(graphql@16.10.0))(graphql@16.10.0)
+      '@tauri-apps/api':
+        specifier: '2'
+        version: 2.1.1
+      graphql:
+        specifier: '16'
+        version: 16.10.0
+    devDependencies:
+      tsup:
+        specifier: '8'
+        version: 8.3.5(jiti@1.21.0)(postcss@8.4.49)(typescript@5.6.3)
+      typescript:
+        specifier: '5'
+        version: 5.6.3
 
   packages/urql:
     dependencies:
@@ -181,14 +200,14 @@ importers:
         version: 2.1.1
       '@urql/core':
         specifier: '5'
-        version: 5.0.8(graphql@16.6.0)
+        version: 5.0.8(graphql@16.10.0)
       wonka:
         specifier: '6'
         version: 6.3.4
     devDependencies:
       graphql:
-        specifier: 16.6.0
-        version: 16.6.0
+        specifier: '16'
+        version: 16.10.0
       tsup:
         specifier: '8'
         version: 8.3.5(jiti@1.21.0)(postcss@8.4.49)(typescript@5.3.2)
@@ -1018,6 +1037,15 @@ packages:
     resolution: {integrity: sha512-qQfo2mxH5yVom1kacMtZZJFVdW+E70mqHMJvVg6WTLo+VBuQJ4TojZlfWBjK0ve5BdEeNAVxOsl/nvNMpJOaJA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
+  '@graphiql/toolkit@0.11.1':
+    resolution: {integrity: sha512-G02te70/oYYna5UhbH6TXwNxeQyWa+ChlPonUrKwC5Ot9ItraGJ9yUU4sS+YRaA+EvkzNoHG79XcW2k1QaAMiw==}
+    peerDependencies:
+      graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
+      graphql-ws: '>= 4.5.0'
+    peerDependenciesMeta:
+      graphql-ws:
+        optional: true
+
   '@graphql-codegen/add@5.0.0':
     resolution: {integrity: sha512-ynWDOsK2yxtFHwcJTB9shoSkUd7YXd6ZE57f0nk7W5cu/nAgxZZpEsnTPEpZB/Mjf14YRGe2uJHQ7AfElHjqUQ==}
     peerDependencies:
@@ -1285,6 +1313,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@n1ru4l/push-pull-async-iterable-iterator@3.2.0':
+    resolution: {integrity: sha512-3fkKj25kEjsfObL6IlKPAlHYPq/oYwUkkQ03zsTTiDjD7vg/RxjdiLeCydqtxHZP0JgsXL3D/X5oAkMGzuUp/Q==}
+    engines: {node: '>=12'}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -4207,9 +4239,9 @@ packages:
 
 snapshots:
 
-  '@0no-co/graphql.web@1.0.11(graphql@16.6.0)':
+  '@0no-co/graphql.web@1.0.11(graphql@16.10.0)':
     optionalDependencies:
-      graphql: 16.6.0
+      graphql: 16.10.0
 
   '@0no-co/graphql.web@1.0.4(graphql@16.6.0)':
     optionalDependencies:
@@ -4263,28 +4295,6 @@ snapshots:
       zen-observable-ts: 1.2.5
     optionalDependencies:
       graphql-ws: 5.14.2(graphql@16.10.0)
-    transitivePeerDependencies:
-      - '@types/react'
-
-  '@apollo/client@3.12.4(graphql-ws@5.14.2(graphql@16.6.0))(graphql@16.6.0)':
-    dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.6.0)
-      '@wry/caches': 1.0.1
-      '@wry/equality': 0.5.7
-      '@wry/trie': 0.5.0
-      graphql: 16.6.0
-      graphql-tag: 2.12.6(graphql@16.6.0)
-      hoist-non-react-statics: 3.3.2
-      optimism: 0.18.1
-      prop-types: 15.8.1
-      rehackt: 0.1.0
-      response-iterator: 0.2.11
-      symbol-observable: 4.0.0
-      ts-invariant: 0.10.3
-      tslib: 2.6.2
-      zen-observable-ts: 1.2.5
-    optionalDependencies:
-      graphql-ws: 5.14.2(graphql@16.6.0)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -5111,6 +5121,16 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.55.0': {}
+
+  '@graphiql/toolkit@0.11.1(@types/node@20.10.4)(graphql-ws@5.14.2(graphql@16.10.0))(graphql@16.10.0)':
+    dependencies:
+      '@n1ru4l/push-pull-async-iterable-iterator': 3.2.0
+      graphql: 16.10.0
+      meros: 1.3.0(@types/node@20.10.4)
+    optionalDependencies:
+      graphql-ws: 5.14.2(graphql@16.10.0)
+    transitivePeerDependencies:
+      - '@types/node'
 
   '@graphql-codegen/add@5.0.0(graphql@16.10.0)':
     dependencies:
@@ -6031,6 +6051,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.15
 
+  '@n1ru4l/push-pull-async-iterable-iterator@3.2.0': {}
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -6404,9 +6426,9 @@ snapshots:
     transitivePeerDependencies:
       - graphql
 
-  '@urql/core@5.0.8(graphql@16.6.0)':
+  '@urql/core@5.0.8(graphql@16.10.0)':
     dependencies:
-      '@0no-co/graphql.web': 1.0.11(graphql@16.6.0)
+      '@0no-co/graphql.web': 1.0.11(graphql@16.10.0)
       wonka: 6.3.4
     transitivePeerDependencies:
       - graphql
@@ -8919,6 +8941,33 @@ snapshots:
     optionalDependencies:
       postcss: 8.4.49
       typescript: 5.3.2
+    transitivePeerDependencies:
+      - jiti
+      - supports-color
+      - tsx
+      - yaml
+
+  tsup@8.3.5(jiti@1.21.0)(postcss@8.4.49)(typescript@5.6.3):
+    dependencies:
+      bundle-require: 5.0.0(esbuild@0.24.0)
+      cac: 6.7.14
+      chokidar: 4.0.1
+      consola: 3.2.3
+      debug: 4.3.7
+      esbuild: 0.24.0
+      joycon: 3.1.1
+      picocolors: 1.1.1
+      postcss-load-config: 6.0.1(jiti@1.21.0)(postcss@8.4.49)
+      resolve-from: 5.0.0
+      rollup: 4.27.3
+      source-map: 0.8.0-beta.0
+      sucrase: 3.35.0
+      tinyexec: 0.3.1
+      tinyglobby: 0.2.10
+      tree-kill: 1.2.2
+    optionalDependencies:
+      postcss: 8.4.49
+      typescript: 5.6.3
     transitivePeerDependencies:
       - jiti
       - supports-color
