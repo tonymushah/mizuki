@@ -26,6 +26,11 @@ export type QuerySayArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type Subscriptions = {
+  __typename?: 'Subscriptions';
+  watchMessages: Scalars['String']['output'];
+};
+
 export type SayQueryVariables = Exact<{
   name?: InputMaybe<Scalars['String']['input']>;
 }>;
