@@ -64,6 +64,11 @@ export class SubscriptionsLink extends ApolloLink {
     operation: Operation,
     forward?: NextLink | undefined
   ): Observable<FetchResult> | null {
+    const args = {
+      query: print(operation.query),
+      variables: operation.variables || undefined,
+      extensions: operation.extensions
+    }
     return new Observable(subscriber => {
       const appWebview = getCurrentWebviewWindow()
       const command = `plugin:${this.pluginName}|subscriptions`
@@ -87,16 +92,20 @@ export class SubscriptionsLink extends ApolloLink {
             `graphql://${id}`,
             (event: Event<string | null>) => {
               if (event.payload === null) return subscriber.complete()
-              subscriber.next(JSON.parse(event.payload))
+              const res: FetchResult = JSON.parse(event.payload)
+              console.debug(res)
+              subscriber.next(res)
             }
           )
         )
         .then(_unlisten => unlistens.push(_unlisten))
         .then(() =>
           invoke(command, {
-            ...operation,
+            ...args,
             id,
             sub_id: subId
+          }).catch(e => {
+            throw new Error(`Tauri Invoke Error ${String(e)}`)
           })
         )
         .catch(err => {
