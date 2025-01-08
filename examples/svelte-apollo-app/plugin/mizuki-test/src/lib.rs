@@ -56,7 +56,8 @@ async fn make_future(
   Result<(), watch::error::RecvError>,
   Receiver<Option<String>>,
 ) {
-  let res = rx.wait_for(|e| e.is_some()).await.map(|_| ());
+  let res = rx.changed().await;
+
   (res, rx)
 }
 

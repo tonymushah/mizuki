@@ -2,36 +2,15 @@
   import {graphql} from '$lib/gql'
   import client from '$lib/gql.client'
   import {readable} from 'svelte/store'
+  import Sub from './Sub.svelte'
   let listening = $state(true)
-  const subscription = graphql(`
-    subscription watchMessages {
-      watchMessages
-    }
-  `)
-  const sub = readable<string | undefined>(undefined, set => {
-    const sub_ = client
-      .subscribe({
-        query: subscription
-      })
-      .subscribe(r => {
-        set(r.data?.watchMessages)
-      })
-    return () => {
-      sub_.unsubscribe()
-    }
-  })
+  
 </script>
 
 <div>
   <h4>Subscription</h4>
   {#if listening}
-    <p class:noMessage={$sub == undefined}>
-      {#if $sub}
-        {$sub}
-      {:else}
-        No Message
-      {/if}
-    </p>
+    <Sub/>
   {/if}
 
   <button
@@ -68,8 +47,5 @@
     background-color: #ffffff;
     transition: border-color 0.25s;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  }
-  .noMessage {
-    font-style: italic;
   }
 </style>

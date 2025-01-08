@@ -71,30 +71,23 @@ export class SubscriptionsLink extends ApolloLink {
     }
     const appWebview = getCurrentWebviewWindow()
     const command = `plugin:${this.pluginName}|subscriptions`
-    const id = Math.floor(Math.random() * 10000000)
-    const subId = `${Math.floor(Math.random() * 10000000)}`
-    let unlistens: (() => void)[] = [
-      () => {
-        appWebview.emit(this.subEndEventLabel, subId)
-      }
-    ]
 
-    const unlisten = () => {
-      unlistens.forEach(u => u())
-      unlistens = []
-    }
-    window.addEventListener('beforeunload', unlisten)
-    unlistens.push(() => window.removeEventListener('beforeunload', unlisten))
-    const invokeObs = fromPromise(
-      invoke(command, {
-        ...args,
-        id,
-        sub_id: subId
-      }).catch(e => {
-        throw new Error(`Tauri Invoke Error ${String(e)}`)
-      })
-    )
     return new Observable(subscriber => {
+      const id = Math.floor(Math.random() * 10000000)
+      const subId = `${Math.floor(Math.random() * 10000000)}`
+      let unlistens: (() => void)[] = [
+        () => {
+          appWebview.emit(this.subEndEventLabel, subId)
+        }
+      ]
+
+      const unlisten = () => {
+        unlistens.forEach(u => u())
+        unlistens = []
+      }
+      window.addEventListener('beforeunload', unlisten)
+      unlistens.push(() => window.removeEventListener('beforeunload', unlisten))
+
       appWebview
         .listen(`graphql://${id}`, (event: Event<string | null>) => {
           if (event.payload === null) return subscriber.complete()
@@ -103,15 +96,18 @@ export class SubscriptionsLink extends ApolloLink {
           subscriber.next(res)
         })
         .then(_unlisten => unlistens.push(_unlisten))
+        .then(() =>
+          invoke(command, {
+            ...args,
+            id,
+            sub_id: subId
+          }).catch(e => {
+            throw new Error(`Tauri Invoke Error ${String(e)}`)
+          })
+        )
         .catch(err => {
           subscriber.error(err)
         })
-      unlistens.push(
-        invokeObs.subscribe(
-          e => {},
-          err => subscriber.error(err)
-        ).unsubscribe
-      )
       return unlisten
     })
   }
