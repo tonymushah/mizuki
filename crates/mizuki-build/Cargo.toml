@@ -1,0 +1,12 @@
+[package]
+name = "mizuki-build"
+version = "1.0.0"
+edition = "2021"
+authors = ["tonymushah <tonymushahDev06@yahoo.com>"]
+description = "A wrapper for tauri-plugin for muziki-plugins"
+rust-version = "1.77.2"
+license = "MIT"
+repository = "https://github.com/tonymushah/mizuki"
+
+[dependencies]
+tauri-plugin = {workspace = true, features = ["build"]}

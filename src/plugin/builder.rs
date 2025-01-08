@@ -1,11 +1,23 @@
 use async_graphql::{BatchRequest, ObjectType, Request, Schema, SubscriptionType};
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
-use tauri::{plugin::Result, AppHandle, PageLoadPayload, RunEvent, Runtime, Window};
+use tauri::{webview::PageLoadPayload, AppHandle, RunEvent, Runtime, Url, Webview, Window};
 
 use super::{
-  MizukiPlugin, OnBatchRequest, OnDrop, OnEvent, OnPageLoad, OnSubRequst, OnWebviewReady, SetupHook,
+  MizukiPlugin, OnBatchRequest, OnDrop, OnEvent, OnNavigation, OnPageLoad, OnSubRequst,
+  OnWebviewReady, OnWindowReady, SetupHook,
 };
+
+/// Errors that can happen during [`Builder`].
+#[derive(Debug, Clone, Hash, PartialEq, thiserror::Error)]
+#[non_exhaustive]
+pub enum BuilderError {
+  /// Plugin attempted to use a reserved name.
+  #[error("plugin uses reserved name: {0}")]
+  ReservedName(String),
+}
+
+const RESERVED_PLUGIN_NAMES: &[&str] = &["core", "tauri"];
 
 ///
 /// This [`self::Builder`] struct share the same build function as [`tauri::plugin::Builder`]
@@ -27,6 +39,10 @@ where
   on_drop: Option<Box<OnDrop<R>>>,
   on_batch_request: Box<OnBatchRequest>,
   on_sub_request: Box<OnSubRequst>,
+  on_window_ready: Box<OnWindowReady<R>>,
+  on_navigation: Box<OnNavigation<R>>,
+  auto_cancel: bool,
+  sub_event_label: String,
 }
 
 impl<R, Q, M, S> Builder<R, Q, M, S>
@@ -49,6 +65,10 @@ where
       on_webview_ready: Box::new(|_| ()),
       on_event: Box::new(|_, _| ()),
       on_drop: None,
+      on_window_ready: Box::new(|_| ()),
+      on_navigation: Box::new(|_, _| true),
+      auto_cancel: true,
+      sub_event_label: "sub_end".into(),
     }
   }
   /// Same as [`tauri::plugin::Builder::js_init_script`]
@@ -73,7 +93,9 @@ where
   #[must_use]
   pub fn setup<F>(mut self, setup: F) -> Self
   where
-    F: FnOnce(&AppHandle<R>, JsonValue, &Schema<Q, M, S>) -> Result<()> + Send + 'static,
+    F: FnOnce(&AppHandle<R>, JsonValue, &Schema<Q, M, S>) -> Result<(), Box<dyn std::error::Error>>
+      + Send
+      + 'static,
   {
     self.setup.replace(Box::new(setup));
     self
@@ -83,7 +105,7 @@ where
   #[must_use]
   pub fn on_page_load<F>(mut self, on_page_load: F) -> Self
   where
-    F: FnMut(Window<R>, PageLoadPayload) + Send + 'static,
+    F: FnMut(&Webview<R>, &PageLoadPayload<'_>) + Send + 'static,
   {
     self.on_page_load = Box::new(on_page_load);
     self
@@ -93,7 +115,7 @@ where
   #[must_use]
   pub fn on_webview_ready<F>(mut self, on_webview_ready: F) -> Self
   where
-    F: FnMut(Window<R>) + Send + 'static,
+    F: FnMut(Webview<R>) + Send + 'static,
   {
     self.on_webview_ready = Box::new(on_webview_ready);
     self
@@ -119,8 +141,8 @@ where
     self
   }
 
-  /// Register a callback when a batch_request is invoked 
-  /// Might be useful if you want a request cache system 
+  /// Register a callback when a batch_request is invoked
+  /// Might be useful if you want a request cache system
   #[must_use]
   pub fn on_batch_request<F>(mut self, on_batch_request: F) -> Self
   where
@@ -130,8 +152,8 @@ where
     self
   }
 
-  /// Register a callback when a subscription request is invoked 
-  /// Might be useful if you want a request cache system 
+  /// Register a callback when a subscription request is invoked
+  /// Might be useful if you want a request cache system
   #[must_use]
   pub fn on_sub_request<F>(mut self, on_sub_request: F) -> Self
   where
@@ -140,9 +162,53 @@ where
     self.on_sub_request = Box::new(on_sub_request);
     self
   }
-  /// Build the [`crate::MizukiPlugin`] 
-  pub fn build(self) -> MizukiPlugin<R, Q, M, S> {
-    MizukiPlugin {
+  /// Similar to [`tauri::plugin::Builder::on_navigation`]
+  #[must_use]
+  pub fn on_navigation<F>(mut self, on_navigation: F) -> Self
+  where
+    F: Fn(&Webview<R>, &Url) -> bool + Send + 'static,
+  {
+    self.on_navigation = Box::new(on_navigation);
+    self
+  }
+  /// Similar to [`tauri::plugin::Builder::on_window_ready`]
+  #[must_use]
+  pub fn on_window_ready<F>(mut self, on_window_ready: F) -> Self
+  where
+    F: FnMut(Window<R>) + Send + 'static,
+  {
+    self.on_window_ready = Box::new(on_window_ready);
+    self
+  }
+  /// Prevent the plugin for canceling subscription internally.
+  /// But the subscription will still be cancelled if the window is reloaded or destroyed.
+  #[must_use]
+  pub fn auto_cancel(mut self, auto_cancel: bool) -> Self {
+    self.auto_cancel = auto_cancel;
+    self
+  }
+
+  /// Modify the subscription cancel event label
+  ///
+  /// Default: sub_event
+  pub fn subscription_end_label(mut self, label: String) -> Self {
+    self.sub_event_label = label;
+    self
+  }
+  /// Build the [`crate::MizukiPlugin`]
+  ///
+  /// It returns an error if your plugin name is reserved.
+  ///
+  /// ## List of reserved names
+  ///
+  /// - core
+  /// - tauri
+  ///
+  pub fn try_build(self) -> Result<MizukiPlugin<R, Q, M, S>, BuilderError> {
+    if let Some(&reserved) = RESERVED_PLUGIN_NAMES.iter().find(|&r| r == &self.name) {
+      return Err(BuilderError::ReservedName(reserved.into()));
+    }
+    Ok(MizukiPlugin {
       name: self.name,
       app: None,
       schema: self.schema,
@@ -154,6 +220,19 @@ where
       on_drop: self.on_drop,
       on_batch_request: Arc::new(self.on_batch_request),
       on_sub_request: Arc::new(self.on_sub_request),
-    }
+      on_navigation: self.on_navigation,
+      on_window_ready: self.on_window_ready,
+      auto_cancel: self.auto_cancel,
+      sub_end_event_label: self.sub_event_label,
+    })
+  }
+  /// Build the [`crate::MizukiPlugin`]
+  ///
+  /// # Panics
+  ///
+  /// If the builder returns an error during [`Self::try_build`], then this method will panic.
+  ///
+  pub fn build(self) -> MizukiPlugin<R, Q, M, S> {
+    self.try_build().unwrap()
   }
 }

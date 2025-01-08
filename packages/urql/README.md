@@ -21,11 +21,12 @@ You need to register the plugin with Tauri first! Please see the [top-level Read
 Import and use the custom exchange to connect to the GraphQL endpoint exposed over IPC.
 
 ```javascript
-import {invokeExchange} from 'mizuki-urql-adapter'
+import { getExchanges } from 'mizuki-urql-adapter'
+import { createClient, useQuery, useSubscription } from "@urql/preact"
 
 const client = createClient({
-  url: 'graphql', // this value is important, don't touch
-  exchanges: [invokeExchange('myPlugin')]
+  url: 'graphql', // not important but needed to releive some Typescript errors
+  exchanges: [...getExchanges('myPlugin')]
 })
 
 const heroQuery = `
@@ -48,20 +49,6 @@ function Hero() {
 
   return <p>The hero is {data.hero.name}</p>
 }
-```
-
-### Subscriptions
-
-This adapter also supports subscriptions.
-
-```javascript
-import {subscriptionExchange} from 'mizuki-urql-adapter'
-import {createClient} from '@urql/preact'
-
-const client = createClient({
-  url: 'graphql',
-  exchanges: [subscriptionExchange('myPlugin')]
-})
 
 const newMessages = `
   subscription MessageSub {

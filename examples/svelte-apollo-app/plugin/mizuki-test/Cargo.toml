@@ -1,0 +1,17 @@
+[package]
+name = "mizuki-test-apollo"
+version = "0.1.0"
+edition = "2021"
+links = "mizuki-test-apollo"
+
+[build-dependencies]
+mizuki-build = { workspace = true }
+
+[dependencies]
+serde_json.workspace = true
+serde = { workspace = true, features = ["derive"] }
+tauri = { workspace = true, features = [] }
+mizuki = { workspace = true }
+async-graphql.workspace = true
+tokio = "1"
+tokio-util = "0.7"

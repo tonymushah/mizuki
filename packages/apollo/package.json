@@ -1,0 +1,34 @@
+{
+  "name": "mizuki-apollo-link",
+  "version": "1.0.0",
+  "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
+  "author": "Jonas Kruckenberg, Tony Mushah",
+  "license": "MIT",
+  "private": false,
+  "repository": "https://github.com/tonymushah/mizuki",
+  "homepage": "https://github.com/tonymushah/mizuki/tree/main/packages/urql",
+  "bugs": "https://github.com/tonymushah/mizuki/issues",
+  "keywords": [
+    "tauri",
+    "graphql"
+  ],
+  "browser": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.12.4",
+    "@tauri-apps/api": "2"
+  },
+  "devDependencies": {
+    "graphql": "16.6.0",
+    "tsup": "8",
+    "typescript": "5"
+  }
+}

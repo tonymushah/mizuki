@@ -210,7 +210,55 @@
 //! [`Commands`]: https://tauri.studio/docs/guides/command
 //! [`Events`]: https://tauri.studio/docs/guides/events
 //! [`GraphQL`]: https://graphql.org
-pub(crate) mod subscription;
+pub(crate) mod cancel_token;
 pub(crate) mod plugin;
+pub(crate) mod subscription;
 
-pub use plugin::{Builder, MizukiPlugin};
+use async_graphql::Context;
+pub use plugin::{Builder, BuilderError, MizukiPlugin};
+use tauri::{AppHandle, Runtime, Webview, Window};
+use tokio_util::sync::CancellationToken;
+
+/// A trait extension
+/// to extract [`tauri::AppHandle`], [`tauri::Window`], [`tauri::Webview`]
+/// and the subscription [`tokio_util::sync::CancellationToken`]
+/// from an [`async_graphql::Context`].
+pub trait AsyncGQLContextExt {
+  fn app_handle<R>(&self) -> Option<&AppHandle<R>>
+  where
+    R: Runtime;
+  fn window<R>(&self) -> Option<&Window<R>>
+  where
+    R: Runtime;
+  fn webview<R>(&self) -> Option<&Webview<R>>
+  where
+    R: Runtime;
+  fn cancel_token(&self) -> Option<&CancellationToken>;
+}
+
+impl AsyncGQLContextExt for Context<'_> {
+  fn app_handle<R>(&self) -> Option<&AppHandle<R>>
+  where
+    R: Runtime,
+  {
+    self.data_opt()
+  }
+
+  fn window<R>(&self) -> Option<&Window<R>>
+  where
+    R: Runtime,
+  {
+    self.data_opt()
+  }
+
+  fn webview<R>(&self) -> Option<&Webview<R>>
+  where
+    R: Runtime,
+  {
+    self.data_opt()
+  }
+
+  fn cancel_token(&self) -> Option<&CancellationToken> {
+    self.data_opt()
+  }
+}
