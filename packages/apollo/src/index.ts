@@ -69,48 +69,49 @@ export class SubscriptionsLink extends ApolloLink {
       variables: operation.variables || undefined,
       extensions: operation.extensions
     }
-    return new Observable(subscriber => {
-      const appWebview = getCurrentWebviewWindow()
-      const command = `plugin:${this.pluginName}|subscriptions`
-      const id = Math.floor(Math.random() * 10000000)
-      const subId = `${Math.floor(Math.random() * 10000000)}`
-      let unlistens: (() => void)[] = [
-        () => {
-          appWebview.emit(this.subEndEventLabel, subId)
-        }
-      ]
-
-      const unlisten = () => {
-        unlistens.forEach(u => u())
-        unlistens = []
+    const appWebview = getCurrentWebviewWindow()
+    const command = `plugin:${this.pluginName}|subscriptions`
+    const id = Math.floor(Math.random() * 10000000)
+    const subId = `${Math.floor(Math.random() * 10000000)}`
+    let unlistens: (() => void)[] = [
+      () => {
+        appWebview.emit(this.subEndEventLabel, subId)
       }
-      window.addEventListener('beforeunload', unlisten)
-      unlistens.push(() => window.removeEventListener('beforeunload', unlisten))
-      Promise.resolve()
-        .then(async () =>
-          appWebview.listen(
-            `graphql://${id}`,
-            (event: Event<string | null>) => {
-              if (event.payload === null) return subscriber.complete()
-              const res: FetchResult = JSON.parse(event.payload)
-              console.debug(res)
-              subscriber.next(res)
-            }
-          )
-        )
+    ]
+
+    const unlisten = () => {
+      unlistens.forEach(u => u())
+      unlistens = []
+    }
+    window.addEventListener('beforeunload', unlisten)
+    unlistens.push(() => window.removeEventListener('beforeunload', unlisten))
+    const invokeObs = fromPromise(
+      invoke(command, {
+        ...args,
+        id,
+        sub_id: subId
+      }).catch(e => {
+        throw new Error(`Tauri Invoke Error ${String(e)}`)
+      })
+    )
+    return new Observable(subscriber => {
+      appWebview
+        .listen(`graphql://${id}`, (event: Event<string | null>) => {
+          if (event.payload === null) return subscriber.complete()
+          const res: FetchResult = JSON.parse(event.payload)
+          // console.debug(res)
+          subscriber.next(res)
+        })
         .then(_unlisten => unlistens.push(_unlisten))
-        .then(() =>
-          invoke(command, {
-            ...args,
-            id,
-            sub_id: subId
-          }).catch(e => {
-            throw new Error(`Tauri Invoke Error ${String(e)}`)
-          })
-        )
         .catch(err => {
           subscriber.error(err)
         })
+      unlistens.push(
+        invokeObs.subscribe(
+          e => {},
+          err => subscriber.error(err)
+        ).unsubscribe
+      )
       return unlisten
     })
   }
