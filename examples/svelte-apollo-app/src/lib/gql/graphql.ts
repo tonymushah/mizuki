@@ -38,5 +38,11 @@ export type SayQueryVariables = Exact<{
 
 export type SayQuery = { __typename?: 'Query', say: string };
 
+export type WatchMessagesSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WatchMessagesSubscription = { __typename?: 'Subscriptions', watchMessages: string };
+
 
 export const SayDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"say"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"say"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}]}}]} as unknown as DocumentNode<SayQuery, SayQueryVariables>;
+export const WatchMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"watchMessages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"watchMessages"}}]}}]} as unknown as DocumentNode<WatchMessagesSubscription, WatchMessagesSubscriptionVariables>;

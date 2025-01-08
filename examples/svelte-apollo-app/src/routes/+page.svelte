@@ -1,6 +1,7 @@
 <script lang="ts">
   import { graphql } from "$lib/gql"
   import client from "$lib/gql.client"
+  import Subscription from "./Subscription.svelte"
   // import { invoke } from "@tauri-apps/api/core";
 
   let name = $state("");
@@ -10,7 +11,6 @@
       say(name: $name)
     }
   `);
-
   async function greet(event: Event) {
     event.preventDefault();
     const res = await client.query({
@@ -46,6 +46,8 @@
     <button type="submit">Greet</button>
   </form>
   <p>{greetMsg}</p>
+  
+  <Subscription/>
 </main>
 
 <style>

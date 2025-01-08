@@ -14,6 +14,7 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  */
 const documents = {
     "\n    query say($name: String) {\n      say(name: $name)\n    }\n  ": types.SayDocument,
+    "\n    subscription watchMessages {\n      watchMessages\n    }\n  ": types.WatchMessagesDocument,
 };
 
 /**
@@ -34,6 +35,10 @@ export function graphql(source: string): unknown;
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    query say($name: String) {\n      say(name: $name)\n    }\n  "): (typeof documents)["\n    query say($name: String) {\n      say(name: $name)\n    }\n  "];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    subscription watchMessages {\n      watchMessages\n    }\n  "): (typeof documents)["\n    subscription watchMessages {\n      watchMessages\n    }\n  "];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
