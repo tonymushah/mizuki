@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    svelte_apollo_app_lib::run()
+  svelte_apollo_app_lib::run()
 }

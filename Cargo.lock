@@ -2389,7 +2389,7 @@ dependencies = [
 
 [[package]]
 name = "mizuki"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "async-graphql",
  "rand 0.8.5",

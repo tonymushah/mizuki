@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    graphiql_test_lib::run()
+  graphiql_test_lib::run()
 }
