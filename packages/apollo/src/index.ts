@@ -8,7 +8,7 @@ import {
 } from '@apollo/client/core'
 import {GraphQLError, print} from 'graphql'
 import {invoke} from '@tauri-apps/api/core'
-import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
+import {getCurrentWebview} from '@tauri-apps/api/webview'
 import {Event} from '@tauri-apps/api/event'
 import {getMainDefinition} from '@apollo/client/utilities'
 
@@ -69,7 +69,7 @@ export class SubscriptionsLink extends ApolloLink {
       variables: operation.variables || undefined,
       extensions: operation.extensions
     }
-    const appWebview = getCurrentWebviewWindow()
+    const appWebview = getCurrentWebview()
     const command = `plugin:${this.pluginName}|subscriptions`
 
     return new Observable(subscriber => {
@@ -77,7 +77,11 @@ export class SubscriptionsLink extends ApolloLink {
       const subId = `${Math.floor(Math.random() * 10000000)}`
       let unlistens: (() => void)[] = [
         () => {
-          appWebview.emit(this.subEndEventLabel, subId)
+          appWebview.emitTo(
+            {kind: 'Webview', label: appWebview.label},
+            this.subEndEventLabel,
+            subId
+          )
         }
       ]
 

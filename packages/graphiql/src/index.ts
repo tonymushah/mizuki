@@ -1,8 +1,8 @@
 import {Fetcher, Observable, Unsubscribable} from '@graphiql/toolkit'
 import {ExecutionResult, GraphQLError, parse} from 'graphql'
 import {invoke} from '@tauri-apps/api/core'
-import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
 import {Event} from '@tauri-apps/api/event'
+import {getCurrentWebview} from '@tauri-apps/api/webview'
 
 type Response = [body: string, isOk: boolean]
 
@@ -110,7 +110,7 @@ export function getSubscriptionFetcher(
   pluginName: string,
   subEndEventLabel: string = 'sub_end'
 ) {
-  const appWebview = getCurrentWebviewWindow()
+  const appWebview = getCurrentWebview()
   const command = `plugin:${pluginName}|subscriptions`
   const fetcher: Fetcher = async function (params) {
     // console.log('fetching')
@@ -118,7 +118,14 @@ export function getSubscriptionFetcher(
     const subId = `${Math.floor(Math.random() * 10000000)}`
     let unlistens: (() => void)[] = [
       () => {
-        appWebview.emit(subEndEventLabel, subId)
+        appWebview.emitTo(
+          {
+            kind: 'Webview',
+            label: appWebview.label
+          },
+          subEndEventLabel,
+          subId
+        )
       }
     ]
 

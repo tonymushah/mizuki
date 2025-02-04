@@ -1,6 +1,6 @@
 import {invoke} from '@tauri-apps/api/core'
 import {Event} from '@tauri-apps/api/event'
-import {getCurrentWebviewWindow} from '@tauri-apps/api/webviewWindow'
+import {getCurrentWebview} from '@tauri-apps/api/webview'
 import {
   Exchange,
   ExecutionResult,
@@ -170,7 +170,7 @@ export function subscriptionExchange(
   name: string,
   subEndEventLabel: string = 'sub_end'
 ) {
-  const appWebview = getCurrentWebviewWindow()
+  const appWebview = getCurrentWebview()
   return subEx({
     forwardSubscription: operation => ({
       subscribe: sink => {
@@ -178,7 +178,14 @@ export function subscriptionExchange(
         const subId = `${Math.floor(Math.random() * 10000000)}`
         let unlistens: (() => void)[] = [
           () => {
-            appWebview.emit(subEndEventLabel, subId)
+            appWebview.emitTo(
+              {
+                kind: 'Webview',
+                label: appWebview.label
+              },
+              subEndEventLabel,
+              subId
+            )
           }
         ]
 
