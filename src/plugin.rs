@@ -12,7 +12,7 @@ use tauri::{
   ipc::{Invoke, InvokeError},
   plugin::Plugin,
   webview::PageLoadPayload,
-  AppHandle, Emitter, Manager, RunEvent, Runtime, Url, Webview, Window, WindowEvent,
+  AppHandle, Emitter, EventTarget, Manager, RunEvent, Runtime, Url, Webview, Window, WindowEvent,
 };
 
 pub(crate) type SetupHook<R, Q, M, S> = dyn FnOnce(&AppHandle<R>, JsonValue, &Schema<Q, M, S>) -> Result<(), Box<dyn std::error::Error>>
@@ -182,7 +182,7 @@ where
                 if let Some(result) = res {
                   let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
 
-                  subscription_window.emit(event_id, str)?;
+                  subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()},event_id, str)?;
                 }else {
                   // println!("end stream");
                   break;
@@ -198,11 +198,11 @@ where
           while let Some(result) = stream.next().await {
             let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
 
-            subscription_window.emit(event_id, str)?;
+            subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()},event_id, str)?;
           }
         }
 
-        subscription_window.emit(event_id, Option::<()>::None)?;
+        subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()}, event_id, Option::<()>::None)?;
 
         Ok(())
       }),

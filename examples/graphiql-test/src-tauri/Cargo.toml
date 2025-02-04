@@ -20,6 +20,6 @@ tauri-build = { workspace = true, features = [] }
 [dependencies]
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
-tauri = { workspace = true, features = [] }
+tauri = { workspace = true, features = [], default-features = true }
 tauri-plugin-opener = "2"
 mizuki-test-apollo = { path = "../../svelte-apollo-app/plugin/mizuki-test" }

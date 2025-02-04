@@ -1,6 +1,6 @@
 {
   "name": "mizuki-apollo-link",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",
   "license": "MIT",

@@ -20,7 +20,7 @@ tauri-build = { workspace = true, features = [] }
 [dependencies]
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
-tauri = { workspace = true, features = [] }
+tauri = { workspace = true, features = [], default-features = true }
 mizuki = { workspace = true }
 async-graphql.workspace = true
 tauri-plugin-opener = "2"
