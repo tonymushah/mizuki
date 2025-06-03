@@ -2442,7 +2442,7 @@ dependencies = [
 
 [[package]]
 name = "mizuki"
-version = "1.0.1"
+version = "2.0.0"
 dependencies = [
  "async-graphql",
  "rand 0.8.5",
@@ -2456,7 +2456,7 @@ dependencies = [
 
 [[package]]
 name = "mizuki-build"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "tauri-plugin",
 ]
