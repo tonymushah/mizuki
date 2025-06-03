@@ -6,11 +6,11 @@ import {
   Operation,
   fromPromise
 } from '@apollo/client/core'
-import {GraphQLError, print} from 'graphql'
-import {invoke} from '@tauri-apps/api/core'
-import {getCurrentWebview} from '@tauri-apps/api/webview'
-import {Event} from '@tauri-apps/api/event'
-import {getMainDefinition} from '@apollo/client/utilities'
+import { GraphQLError, print } from 'graphql'
+import { invoke } from '@tauri-apps/api/core'
+import { getCurrentWebview } from '@tauri-apps/api/webview'
+import { Event } from '@tauri-apps/api/event'
+import { getMainDefinition } from '@apollo/client/utilities'
 
 type Response = [body: string, isOk: boolean]
 
@@ -28,9 +28,11 @@ export class InvokeLink extends ApolloLink {
   ): Observable<FetchResult> | null {
     const command = `plugin:${this.pluginName}|graphql`
     const args = {
-      query: print(operation.query),
-      variables: operation.variables || undefined,
-      extensions: operation.extensions
+      operations: {
+        query: print(operation.query),
+        variables: operation.variables || undefined,
+        extensions: operation.extensions
+      }
     }
     return fromPromise(
       invoke<Response>(command, args)
@@ -78,7 +80,7 @@ export class SubscriptionsLink extends ApolloLink {
       let unlistens: (() => void)[] = [
         () => {
           appWebview.emitTo(
-            {kind: 'Webview', label: appWebview.label},
+            { kind: 'Webview', label: appWebview.label },
             this.subEndEventLabel,
             subId
           )
@@ -123,7 +125,7 @@ export class MizukiLink extends ApolloLink {
   constructor(pluginName: string, subEndEventLabel: string = 'sub_end') {
     super()
     this.inner = ApolloLink.split(
-      ({query}) => {
+      ({ query }) => {
         const definition = getMainDefinition(query)
 
         return (

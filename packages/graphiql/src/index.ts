@@ -1,15 +1,17 @@
-import {Fetcher, Observable, Unsubscribable} from '@graphiql/toolkit'
-import {ExecutionResult, GraphQLError, parse} from 'graphql'
-import {invoke} from '@tauri-apps/api/core'
-import {Event} from '@tauri-apps/api/event'
-import {getCurrentWebview} from '@tauri-apps/api/webview'
+import { Fetcher, Observable, Unsubscribable } from '@graphiql/toolkit'
+import { ExecutionResult, GraphQLError, parse } from 'graphql'
+import { invoke } from '@tauri-apps/api/core'
+import { Event } from '@tauri-apps/api/event'
+import { getCurrentWebview } from '@tauri-apps/api/webview'
 
 type Response = [body: string, isOk: boolean]
 
 export function getInvokeFetcher(pluginName: string) {
   const command = `plugin:${pluginName}|graphql`
   const fetcher: Fetcher = async function (params) {
-    const r = await invoke<Response>(command, params)
+    const r = await invoke<Response>(command, {
+      operations: params
+    })
       .then(response => {
         const [body] = response!
         const payload: ExecutionResult = JSON.parse(body)
