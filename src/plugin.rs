@@ -1,4 +1,6 @@
-use crate::{cancel_token::CancellationTokenListener, subscription::SubscriptionRequest};
+use crate::{
+  cancel_token::CancellationTokenListener, query::GraphQLRequest, subscription::SubscriptionRequest,
+};
 mod builder;
 pub use builder::{Builder, BuilderError};
 
@@ -110,7 +112,7 @@ where
 
     match invoke.message.command() {
       "graphql" => invoke.resolver.respond_async(async move {
-        let req: BatchRequest = match invoke.message.payload() {
+        let req: GraphQLRequest = match invoke.message.payload() {
           tauri::ipc::InvokeBody::Json(value) => {
             serde_json::from_value(value.clone()).map_err(InvokeError::from_error)?
           }
@@ -119,13 +121,28 @@ where
               .map_err(|e: serde_json::Error| InvokeError::from_error(e))?
           }
         };
-
+        let maybe_listener = req.cancel_token.map(|event_id| {
+          CancellationTokenListener::new(
+          invoke.message.webview().clone(),
+          sub_end_event_label,
+          event_id.clone(),
+        )
+        });
+        let cancel_token = maybe_listener.as_ref().map(|d| d.token()).unwrap_or_default();
+        {
+          let cancel_token = cancel_token.clone();
+          invoke.message.webview().window().on_window_event(move |event| {
+            if let WindowEvent::Destroyed = event {
+              cancel_token.cancel();
+            }
+          });
+        }
         let resp = schema
           .execute_batch((on_batch_request)(
-            req
+            req.operations
               .data(invoke.message.webview().app_handle().clone())
               .data(invoke.message.webview())
-              .data(invoke.message.webview().window()),
+              .data(invoke.message.webview().window()).data(cancel_token),
           ))
           .await;
 
@@ -158,7 +175,7 @@ where
             .data(invoke.message.webview().app_handle().clone())
             .data(invoke.message.webview())
             .data(invoke.message.webview().window())
-            .data(webwiew_cancel_token.token().clone()),
+            .data(cancel_token.clone()),
         ));
 
         {

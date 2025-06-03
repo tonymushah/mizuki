@@ -212,6 +212,7 @@
 //! [`GraphQL`]: https://graphql.org
 pub(crate) mod cancel_token;
 pub(crate) mod plugin;
+pub(crate) mod query;
 pub(crate) mod subscription;
 
 use async_graphql::Context;
