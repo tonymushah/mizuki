@@ -27,18 +27,18 @@ jobs:
   audit-js:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Cache pnpm modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
-          node-version: '18'
-      - uses: pnpm/action-setup@v2.2.4
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
         with:
           run_install: true
       - name: audit
