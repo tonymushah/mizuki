@@ -23,12 +23,12 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@apollo/client": "^3.12.4",
-    "@tauri-apps/api": "2"
+    "@apollo/client": "^4.0.7",
+    "@tauri-apps/api": "^2.9.0"
   },
   "devDependencies": {
-    "graphql": "16",
-    "tsup": "8",
-    "typescript": "5"
+    "graphql": "^16.11.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   }
 }

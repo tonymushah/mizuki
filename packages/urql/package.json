@@ -23,13 +23,13 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@tauri-apps/api": "2",
-    "@urql/core": "5 || 6",
-    "wonka": "6"
+    "@tauri-apps/api": "^2.9.0",
+    "@urql/core": "^6.0.1",
+    "wonka": "^6.3.5"
   },
   "devDependencies": {
-    "graphql": "16",
-    "tsup": "8",
-    "typescript": "5"
+    "graphql": "^16.11.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   }
 }

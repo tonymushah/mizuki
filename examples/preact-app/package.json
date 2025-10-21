@@ -11,22 +11,22 @@
   },
   "dependencies": {
     "@mizuki/urql": "link:../../packages/urql",
-    "@preact/signals": "^2.0.0",
-    "@tauri-apps/api": "2",
-    "@urql/preact": "4",
-    "preact": "10"
+    "@preact/signals": "^2.3.2",
+    "@tauri-apps/api": "^2.9.0",
+    "@urql/preact": "^5.0.0",
+    "preact": "^10.27.2"
   },
   "devDependencies": {
-    "@0no-co/graphqlsp": "^0.11.2",
-    "@babel/core": "7",
-    "@graphql-codegen/cli": "^5.0.0",
-    "@graphql-codegen/client-preset": "^4.1.0",
+    "@0no-co/graphqlsp": "^1.15.0",
+    "@babel/core": "^7.28.4",
+    "@graphql-codegen/cli": "^6.0.1",
+    "@graphql-codegen/client-preset": "^5.1.0",
     "@graphql-typed-document-node/core": "^3.2.0",
-    "@preact/preset-vite": "2.9",
-    "@tauri-apps/cli": "2",
-    "graphql": "^16.6.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.3.2",
-    "vite": "6"
+    "@preact/preset-vite": "~2.10.2",
+    "@tauri-apps/cli": "^2.9.0",
+    "graphql": "^16.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.11"
   }
 }
