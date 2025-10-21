@@ -18,7 +18,7 @@ const compat = new FlatCompat({
 export default defineConfig([
     globalIgnores(["**/dist/", "**/lib/", "**/node_modules/", "**/jest.config.js"]),
     {
-        extends: compat.extends("standard", "prettier"),
+        extends: compat.extends("prettier"),
 
         plugins: {
             "@typescript-eslint": typescriptEslint,
