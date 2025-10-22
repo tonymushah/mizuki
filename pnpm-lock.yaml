@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@effection/fetch':
-        specifier: ^2.0.7
-        version: 2.0.7(mocha@10.2.0)
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
@@ -25,10 +22,7 @@ importers:
         version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)
       covector:
         specifier: ^0.12.4
-        version: 0.12.4
-      effection:
-        specifier: ^3.6.1
-        version: 3.6.1
+        version: 0.12.4(mocha@10.2.0)
       eslint:
         specifier: ^9.38.0
         version: 9.38.0(jiti@2.6.1)
@@ -2491,10 +2485,6 @@ packages:
   effection@2.0.8:
     resolution: {integrity: sha512-/v7cbPIXGGylInQgHHjJutzqUn6VIfcP13hh2X0hXf04wwAlSI+lVjUBKpr5TX3+v9dXV/JLHO/pqQ9Cp1QAnQ==}
 
-  effection@3.6.1:
-    resolution: {integrity: sha512-ogsuH/cgxfOOaVUf53pYqhPJth4WhPlva0hGb4Roh6cZhttMoanMqwADkDk9ych28lKuQgntpCszbFRyRFifqg==}
-    engines: {node: '>= 16'}
-
   electron-to-chromium@1.5.237:
     resolution: {integrity: sha512-icUt1NvfhGLar5lSWH3tHNzablaA5js3HVHacQimfP8ViEBOQv+L7DKEuHdbTZ0SKCO1ogTJTIL1Gwk9S6Qvcg==}
 
@@ -4791,7 +4781,7 @@ snapshots:
   '@covector/apply@0.10.0':
     dependencies:
       '@covector/files': 0.8.0
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       semver: 7.7.3
     transitivePeerDependencies:
       - encoding
@@ -4800,7 +4790,7 @@ snapshots:
     dependencies:
       '@covector/command': 0.8.0
       '@covector/files': 0.8.0
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       js-yaml: 4.1.0
       lodash: 4.17.21
       remark-frontmatter: 3.0.0
@@ -4811,22 +4801,23 @@ snapshots:
       - encoding
       - supports-color
 
-  '@covector/changelog@0.12.0':
+  '@covector/changelog@0.12.0(mocha@10.2.0)':
     dependencies:
       '@covector/files': 0.8.0
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       lodash: 4.17.21
       remark-parse: 9.0.0
       remark-stringify: 9.0.1
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   '@covector/command@0.8.0':
     dependencies:
       '@effection/process': 2.1.4
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
     transitivePeerDependencies:
       - encoding
 
@@ -4877,7 +4868,7 @@ snapshots:
 
   '@effection/mocha@2.0.8(mocha@10.2.0)':
     dependencies:
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       mocha: 10.2.0
     transitivePeerDependencies:
       - encoding
@@ -4886,7 +4877,7 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
       ctrlc-windows: 2.2.0
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
@@ -6913,15 +6904,15 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  covector@0.12.4:
+  covector@0.12.4(mocha@10.2.0):
     dependencies:
       '@clack/prompts': 0.7.0
       '@covector/apply': 0.10.0
       '@covector/assemble': 0.12.0
-      '@covector/changelog': 0.12.0
+      '@covector/changelog': 0.12.0(mocha@10.2.0)
       '@covector/command': 0.8.0
       '@covector/files': 0.8.0
-      effection: 2.0.8
+      effection: 2.0.8(mocha@10.2.0)
       globby: 11.1.0
       js-yaml: 4.1.0
       lodash: 4.17.21
@@ -6931,6 +6922,7 @@ snapshots:
       yargs: 17.7.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   create-require@1.1.1: {}
@@ -7088,7 +7080,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effection@2.0.8:
+  effection@2.0.8(mocha@10.2.0):
     dependencies:
       '@effection/channel': 2.0.6
       '@effection/core': 2.2.3
@@ -7099,8 +7091,7 @@ snapshots:
       '@effection/subscription': 2.0.6
     transitivePeerDependencies:
       - encoding
-
-  effection@3.6.1: {}
+      - mocha
 
   electron-to-chromium@1.5.237: {}
 
