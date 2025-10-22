@@ -1,11 +1,5 @@
-import {
-  ApolloLink,
-  FetchResult,
-  NextLink,
-  Observable,
-  Operation,
-  fromPromise
-} from '@apollo/client/core'
+import {ApolloLink, Observable} from '@apollo/client/core'
+import {from as fromPromise} from 'rxjs'
 import {GraphQLError, print} from 'graphql'
 import {invoke} from '@tauri-apps/api/core'
 import {getCurrentWebview} from '@tauri-apps/api/webview'
@@ -23,9 +17,9 @@ export class InvokeLink extends ApolloLink {
   }
 
   public request(
-    operation: Operation,
-    forward?: NextLink | undefined
-  ): Observable<FetchResult> | null {
+    operation: ApolloLink.Operation,
+    forward: ApolloLink.ForwardFunction
+  ): Observable<ApolloLink.Result> {
     const command = `plugin:${this.pluginName}|graphql`
     const args = {
       query: print(operation.query),
@@ -37,7 +31,7 @@ export class InvokeLink extends ApolloLink {
         .then(response => {
           console.debug(response)
           const [body] = response!
-          const payload: FetchResult = JSON.parse(body)
+          const payload: ApolloLink.Result = JSON.parse(body)
           return payload
         })
         .catch(err => {
@@ -61,9 +55,9 @@ export class SubscriptionsLink extends ApolloLink {
   }
 
   public request(
-    operation: Operation,
-    forward?: NextLink | undefined
-  ): Observable<FetchResult> | null {
+    operation: ApolloLink.Operation,
+    forward: ApolloLink.ForwardFunction
+  ): Observable<ApolloLink.Result> {
     const args = {
       query: print(operation.query),
       variables: operation.variables || undefined,
@@ -95,7 +89,7 @@ export class SubscriptionsLink extends ApolloLink {
       appWebview
         .listen(`graphql://${id}`, (event: Event<string | null>) => {
           if (event.payload === null) return subscriber.complete()
-          const res: FetchResult = JSON.parse(event.payload)
+          const res: ApolloLink.Result = JSON.parse(event.payload)
           // console.debug(res)
           subscriber.next(res)
         })
@@ -136,10 +130,10 @@ export class MizukiLink extends ApolloLink {
     )
   }
 
-  request(
-    operation: Operation,
-    forward?: NextLink | undefined
-  ): Observable<FetchResult> | null {
+  public request(
+    operation: ApolloLink.Operation,
+    forward: ApolloLink.ForwardFunction
+  ): Observable<ApolloLink.Result> {
     return this.inner.request(operation, forward)
   }
 }
