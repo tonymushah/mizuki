@@ -70,7 +70,7 @@
       "manager": "rust"
     },
     "mizuki": {
-      "path": ".",
+      "path": "crates/mizuki",
       "manager": "rust",
       "dependencies": ["mizuki-build"]
     },
