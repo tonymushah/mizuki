@@ -11,8 +11,13 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * 3. It does not support dead code elimination, so it will add unused operations.
  *
  * Therefore it is highly recommended to use the babel or swc plugin for production.
+ * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
-const documents = {
+type Documents = {
+    "\n    query say($name: String) {\n      say(name: $name)\n    }\n  ": typeof types.SayDocument,
+    "\n  subscription watchMessages {\n    watchMessages\n  }\n": typeof types.WatchMessagesDocument,
+};
+const documents: Documents = {
     "\n    query say($name: String) {\n      say(name: $name)\n    }\n  ": types.SayDocument,
     "\n  subscription watchMessages {\n    watchMessages\n  }\n": types.WatchMessagesDocument,
 };

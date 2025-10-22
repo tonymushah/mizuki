@@ -1,6 +1,6 @@
 {
   "name": "mizuki-graphiql-fetcher",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A toolkit for building Tauri Plugin that enables type-safe IPC through GraphQL.",
   "author": "Jonas Kruckenberg, Tony Mushah",
   "license": "MIT",
@@ -12,23 +12,24 @@
     "tauri",
     "graphql"
   ],
-  "browser": "dist/index.mjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "type": "module",
+  "browser": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@graphiql/toolkit": "^0.11.3",
-    "@tauri-apps/api": "^2.9.0",
-    "graphql": "^16.11.0"
+    "@tauri-apps/api": "2",
+    "graphql": "16"
   },
   "devDependencies": {
-    "tsup": "^8.5.0",
+    "tsdown": "^0.15.9",
     "typescript": "^5.9.3"
   }
 }

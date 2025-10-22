@@ -64,6 +64,7 @@ async fn make_future(
 impl<R: Runtime> Drop for EventListener<R> {
   fn drop(&mut self) {
     self.webview.unlisten(self.event_id);
+    println!("dropped and unlistened {}", self.event_id);
   }
 }
 
