@@ -151,7 +151,7 @@ function makeInvokeSource(
  * import { subscriptionExchange } from '@mizuki/urql'
  *
  * const name = "<YOUR_PLUGIN_NAME_HERE>"
- * 
+ *
  * const client = createClient({
  *  url: "graphql", // this endpoint is important, don't touch
  *  exchanges: [
@@ -162,7 +162,7 @@ function makeInvokeSource(
  * ```
  *
  * @param name Your plugin name
- * @param [subEndEventLabel='sub_end'] the subscription end event label 
+ * @param [subEndEventLabel='sub_end'] the subscription end event label
  * @returns
  */
 
