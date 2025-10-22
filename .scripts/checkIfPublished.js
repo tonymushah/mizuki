@@ -18,7 +18,7 @@ async function main() {
   console.log(pkg)
 }
 
-main().catch(e => {
+await main().catch(e => {
   console.error(e)
   process.exit(1)
 })
