@@ -10,6 +10,6 @@ pub fn run() {
     .plugin(tauri_plugin_opener::init())
     .plugin(mizuki_test_apollo::init())
     .invoke_handler(tauri::generate_handler![greet])
-    .run(tauri::generate_context!())
+    .run(tauri::tauri_build_context!())
     .expect("error while running tauri application");
 }

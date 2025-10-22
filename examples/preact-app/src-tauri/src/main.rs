@@ -14,6 +14,6 @@ fn main() {
   tauri::Builder::default()
     .plugin(mizuki_test::init())
     .invoke_handler(generate_handler![just_print])
-    .run(tauri::generate_context!())
+    .run(tauri::tauri_build_context!())
     .expect("error while running tauri application");
 }

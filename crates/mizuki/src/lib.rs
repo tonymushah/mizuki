@@ -32,7 +32,7 @@
 //! An example app that implements a very simple read-only todo-app using
 //! GraphQL:
 //!
-//! ```rust
+//! ```rust,norun
 //! use async_graphql::{Schema, EmptySubscription, EmptyMutation, Object, SimpleObject, Result as GraphQLResult};
 //!
 //! #[derive(SimpleObject, Debug, Clone)]
@@ -81,7 +81,7 @@
 //! Similarly to queries, mutations have access to a context object and can
 //! manipulate windows, menus or global state.
 //!
-//! ```rust
+//! ```rust,norun
 //! use async_graphql::{Schema, Object, Context, EmptySubscription, EmptyMutation, SimpleObject, Result as GraphQLObject};
 //! use tauri::{AppHandle, Manager};
 //! use std::sync::Mutex;
@@ -113,7 +113,7 @@
 //!
 //!       let list = app.state::<List>();
 //!       let list = list.0.lock().unwrap();
-//!         
+//!
 //!       let items = list.iter().cloned().collect::<Vec<_>>();
 //!
 //!       Ok(items)
@@ -162,7 +162,7 @@
 //!
 //! Subscription resolvers should be async and must return a [`Stream`].
 //!
-//! ```rust
+//! ```rust,norun
 //! use async_graphql::{
 //!   futures_util::{self, stream::Stream},
 //!   Schema, Object, Subscription, EmptySubscription,

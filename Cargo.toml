@@ -17,3 +17,4 @@ tauri-build = "2"
 tauri-plugin = "2"
 mizuki = { path = "./crates/mizuki" }
 mizuki-build = { path = "./crates/mizuki-build" }
+tauri-plugin-opener = "2"
