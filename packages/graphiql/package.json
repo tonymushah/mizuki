@@ -20,7 +20,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
@@ -29,7 +29,7 @@
     "graphql": "16"
   },
   "devDependencies": {
-    "tsup": "^8.5.0",
+    "tsdown": "^0.15.9",
     "typescript": "^5.9.3"
   }
 }
