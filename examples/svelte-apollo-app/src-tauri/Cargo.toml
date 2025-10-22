@@ -15,7 +15,7 @@ name = "svelte_apollo_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { workspace = true, features = [] }
+tauri-build = { workspace = true, features = ["codegen"] }
 
 [dependencies]
 serde_json.workspace = true
@@ -23,5 +23,5 @@ serde = { workspace = true, features = ["derive"] }
 tauri = { workspace = true, features = [], default-features = true }
 mizuki = { workspace = true }
 async-graphql.workspace = true
-tauri-plugin-opener = "2"
+tauri-plugin-opener.workspace = true
 mizuki-test-apollo = {path = "../plugin/mizuki-test"}
