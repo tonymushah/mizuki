@@ -161,14 +161,19 @@ where
             .data(webwiew_cancel_token.token().clone()),
         ));
 
-        {
-          let cancel_token = cancel_token.clone();
+        let _ca = {
+          let cancel_token = Arc::new(cancel_token.clone());
+          // This will prevent the cancellation token for going out of scope
+          let weak_cancel_token = Arc::downgrade(&cancel_token);
           subscription_window.window().on_window_event(move |event| {
             if let WindowEvent::Destroyed = event {
-              cancel_token.cancel();
+              if let Some(token) = weak_cancel_token.upgrade() {
+                  token.cancel();
+              }
             }
           });
-        }
+          cancel_token
+        };
 
         let event_id = &format!("graphql://{}", req.id);
         if auto_cancel {
