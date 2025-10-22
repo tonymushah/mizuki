@@ -11,7 +11,7 @@
           "pipe": true
         },
         {
-          "command": "sudo apt-get install -y webkit2gtk-4.0",
+          "command": "sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf",
           "dryRunCommand": true,
           "pipe": true
         },
@@ -65,12 +65,27 @@
     }
   },
   "packages": {
-    "mizuki": {
-      "path": ".",
+    "mizuki-build": {
+      "path": "crates/mizuki-build",
       "manager": "rust"
     },
-    "@mizuki/urql": {
+    "mizuki": {
+      "path": "crates/mizuki",
+      "manager": "rust",
+      "dependencies": ["mizuki-build"]
+    },
+    "mizuki-apollo-link": {
+      "path": "packages/apollo",
+      "manager": "javascript",
+      "dependencies": ["mizuki"]
+    },
+    "mizuki-urql-adapter": {
       "path": "packages/urql",
+      "manager": "javascript",
+      "dependencies": ["mizuki"]
+    },
+    "mizuki-graphiql-fetcher": {
+      "path": "packages/graphiql",
       "manager": "javascript",
       "dependencies": ["mizuki"]
     }

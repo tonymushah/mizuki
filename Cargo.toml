@@ -1,48 +1,3 @@
-[package]
-name = "mizuki"
-version = "1.0.1"
-authors = ["Jonas Kruckenberg", "tonymushah <tonymushahDev06@yahoo.com>"]
-description = "A toolkit for building Tauri Plugins that enables type-safe IPC through GraphQL."
-edition = "2021"
-rust-version = "1.77.2"
-exclude = ["/webview-dist", "/webview-src", "node_modules"]
-license = "MIT"
-repository = "https://github.com/tonymushah/mizuki"
-categories = ["gui", "web-programming"]
-keywords = ["tauri-plugin", "graphql"]
-
-[dependencies]
-serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
-tauri = { workspace = true, default-features = false }
-async-graphql.workspace = true
-tokio-util = "0"
-tokio = { version = "1", features = ["macros"] }
-thiserror = "2"
-
-[features]
-log = ["async-graphql/log"]
-opentelemetry = ["async-graphql/opentelemetry"]
-bson = ["async-graphql/bson"]
-chrono = ["async-graphql/chrono"]
-chrono-tz = ["async-graphql/chrono-tz"]
-url = ["async-graphql/url"]
-uuid = ["async-graphql/uuid"]
-string_number = ["async-graphql/string_number"]
-dataloader = ["async-graphql/dataloader"]
-secrecy = ["async-graphql/secrecy"]
-decimal = ["async-graphql/decimal"]
-bigdecimal = ["async-graphql/bigdecimal"]
-cbor = ["async-graphql/cbor"]
-smol_str = ["async-graphql/smol_str"]
-hashbrown = ["async-graphql/hashbrown"]
-time = ["async-graphql/time"]
-tokio-sync = ["async-graphql/tokio-sync"]
-fast_chemail = ["async-graphql/fast_chemail"]
-
-[dev-dependencies]
-rand = "0.8.5"
-
 [workspace]
 members = [
     "crates/*",
@@ -50,7 +5,8 @@ members = [
     "examples/preact-app/plugin/mizuki-test",
     "examples/svelte-apollo-app/plugin/mizuki-test",
 ]
-
+default-members = ["crates/mizuki"]
+resolver = "2"
 
 [workspace.dependencies]
 serde = { version = "1" }
@@ -59,5 +15,5 @@ tauri = { version = "2", default-features = false }
 async-graphql = "7"
 tauri-build = "2"
 tauri-plugin = "2"
-mizuki = { path = "./" }
+mizuki = { path = "./crates/mizuki" }
 mizuki-build = { path = "./crates/mizuki-build" }
