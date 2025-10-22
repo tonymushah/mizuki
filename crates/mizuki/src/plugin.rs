@@ -145,9 +145,9 @@ where
           }
         };
 
-        let subscription_window = window.clone();
+        let subscription_webview = window.clone();
         let webwiew_cancel_token = CancellationTokenListener::new(
-          subscription_window.clone(),
+          subscription_webview.clone(),
           sub_end_event_label,
           req.sub_id.clone(),
         );
@@ -161,14 +161,21 @@ where
             .data(webwiew_cancel_token.token().clone()),
         ));
 
-        {
-          let cancel_token = cancel_token.clone();
-          subscription_window.window().on_window_event(move |event| {
+        let _ca = {
+          let cancel_token = Arc::new(cancel_token.clone());
+          // This will prevent the cancellation token for going out of scope
+          let weak_cancel_token = Arc::downgrade(&cancel_token);
+          subscription_webview.window().on_window_event(move |event| {
             if let WindowEvent::Destroyed = event {
-              cancel_token.cancel();
+              if let Some(token) = weak_cancel_token.upgrade() {
+                  token.cancel();
+              }
             }
           });
-        }
+          cancel_token
+        };
+
+        let _d = cancel_token.drop_guard_ref();
 
         let event_id = &format!("graphql://{}", req.id);
         if auto_cancel {
@@ -182,7 +189,7 @@ where
                 if let Some(result) = res {
                   let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
 
-                  subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()},event_id, str)?;
+                  subscription_webview.emit_to(EventTarget::Webview{label: subscription_webview.label().into()},event_id, str)?;
                 }else {
                   // println!("end stream");
                   break;
@@ -198,11 +205,11 @@ where
           while let Some(result) = stream.next().await {
             let str = serde_json::to_string(&result).map_err(InvokeError::from_error)?;
 
-            subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()},event_id, str)?;
+            subscription_webview.emit_to(EventTarget::Webview{label: subscription_webview.label().into()},event_id, str)?;
           }
         }
 
-        subscription_window.emit_to(EventTarget::Webview{label: subscription_window.label().into()}, event_id, Option::<()>::None)?;
+        subscription_webview.emit_to(EventTarget::Webview{label: subscription_webview.label().into()}, event_id, Option::<()>::None)?;
 
         Ok(())
       }),
