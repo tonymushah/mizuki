@@ -5,6 +5,7 @@ members = [
     "examples/preact-app/plugin/mizuki-test",
     "examples/svelte-apollo-app/plugin/mizuki-test",
 ]
+default-members = ["crates/mizuki"]
 resolver = "2"
 
 [workspace.dependencies]
