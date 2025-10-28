@@ -3,7 +3,7 @@
   "pkgManagers": {
     "rust": {
       "version": true,
-      "getPublishedVersion": "cargo search ${ pkg.pkg } --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -",
+      "getPublishedVersion": "cargo search ${ pkg.pkg } -q --limit 1 | sed -nE 's/^[^\"]*\"//; s/\".*//1p' -",
       "publish": [
         {
           "command": "sudo apt-get update",
