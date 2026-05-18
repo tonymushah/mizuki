@@ -262,8 +262,8 @@ importers:
   packages/graphiql:
     dependencies:
       '@graphiql/toolkit':
-        specifier: ^0.11.3
-        version: 0.11.3(@types/node@24.9.1)(graphql-ws@6.0.6(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)
+        specifier: ^0.12.0
+        version: 0.12.0(@types/node@24.9.1)(graphql-ws@6.0.6(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)
       '@tauri-apps/api':
         specifier: '2'
         version: 2.9.0
@@ -694,6 +694,15 @@ packages:
 
   '@graphiql/toolkit@0.11.3':
     resolution: {integrity: sha512-Glf0fK1cdHLNq52UWPzfSrYIJuNxy8h4451Pw1ZVpJ7dtU+tm7GVVC64UjEDQ/v2j3fnG4cX8jvR75IvfL6nzQ==}
+    peerDependencies:
+      graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
+      graphql-ws: '>= 4.5.0'
+    peerDependenciesMeta:
+      graphql-ws:
+        optional: true
+
+  '@graphiql/toolkit@0.12.0':
+    resolution: {integrity: sha512-pT7EMTKmdOM1mTSmQE0XuEs1UJJgZGnQojQ44nEad7p8/7v1m4P5ResL1vsCVxJYpbHX/cXjpRkrG3A2gpRtRQ==}
     peerDependencies:
       graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
       graphql-ws: '>= 4.5.0'
@@ -4912,17 +4921,18 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
-  '@covector/apply@0.10.0':
+  '@covector/apply@0.10.0(mocha@10.2.0)':
     dependencies:
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.2.0)
       semver: 7.7.4
     transitivePeerDependencies:
       - encoding
+      - mocha
 
-  '@covector/assemble@0.12.0':
+  '@covector/assemble@0.12.0(mocha@10.2.0)':
     dependencies:
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.2.0)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.2.0)
       js-yaml: 4.1.1
@@ -4933,6 +4943,7 @@ snapshots:
       unified: 9.2.2
     transitivePeerDependencies:
       - encoding
+      - mocha
       - supports-color
 
   '@covector/changelog@0.12.0(mocha@10.2.0)':
@@ -4948,12 +4959,13 @@ snapshots:
       - mocha
       - supports-color
 
-  '@covector/command@0.8.0':
+  '@covector/command@0.8.0(mocha@10.2.0)':
     dependencies:
-      '@effection/process': 2.1.4
+      '@effection/process': 2.1.4(mocha@10.2.0)
       effection: 2.0.8(mocha@10.2.0)
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@covector/files@0.8.0':
     dependencies:
@@ -5004,10 +5016,8 @@ snapshots:
     dependencies:
       effection: 2.0.8(mocha@10.2.0)
       mocha: 10.2.0
-    transitivePeerDependencies:
-      - encoding
 
-  '@effection/process@2.1.4':
+  '@effection/process@2.1.4(mocha@10.2.0)':
     dependencies:
       cross-spawn: 7.0.6
       ctrlc-windows: 2.2.0
@@ -5015,6 +5025,7 @@ snapshots:
       shellwords: 0.1.1
     transitivePeerDependencies:
       - encoding
+      - mocha
 
   '@effection/stream@2.0.6':
     dependencies:
@@ -5225,6 +5236,16 @@ snapshots:
       - use-sync-external-store
 
   '@graphiql/toolkit@0.11.3(@types/node@24.9.1)(graphql-ws@6.0.6(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)':
+    dependencies:
+      '@n1ru4l/push-pull-async-iterable-iterator': 3.2.0
+      graphql: 16.11.0
+      meros: 1.3.2(@types/node@24.9.1)
+    optionalDependencies:
+      graphql-ws: 6.0.6(graphql@16.11.0)(ws@8.18.3)
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@graphiql/toolkit@0.12.0(@types/node@24.9.1)(graphql-ws@6.0.6(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)':
     dependencies:
       '@n1ru4l/push-pull-async-iterable-iterator': 3.2.0
       graphql: 16.11.0
@@ -7045,10 +7066,10 @@ snapshots:
   covector@0.12.4(mocha@10.2.0):
     dependencies:
       '@clack/prompts': 0.7.0
-      '@covector/apply': 0.10.0
-      '@covector/assemble': 0.12.0
+      '@covector/apply': 0.10.0(mocha@10.2.0)
+      '@covector/assemble': 0.12.0(mocha@10.2.0)
       '@covector/changelog': 0.12.0(mocha@10.2.0)
-      '@covector/command': 0.8.0
+      '@covector/command': 0.8.0(mocha@10.2.0)
       '@covector/files': 0.8.0
       effection: 2.0.8(mocha@10.2.0)
       globby: 11.1.0
